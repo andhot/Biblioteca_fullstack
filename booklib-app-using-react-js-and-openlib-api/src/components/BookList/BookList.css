@@ -1,0 +1,261 @@
+.booklist, .book-details{
+    padding: 3rem 0;
+    background-color: #f8f9fa;
+}
+.booklist-content{
+    gap: 3rem;
+}
+.book-item{
+    padding: 3rem 2rem;
+    border-radius: 4px;
+    background-color: var(--white-color);
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 5px 15px 0px;
+    transition: var(--transition);
+}
+.book-item:hover{
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px 0px;
+}
+.book-item-img img{
+    max-width: 180px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.book-item-info{
+    margin-top: 2rem;
+}
+.book-item-info-item.title{
+    line-height: 1.4;
+    margin-bottom: 0.8rem;
+}
+.book-item-info-item.author{
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+.book-item-info-item:not(.book-item-info-item.title) span:last-child{
+    opacity: 0.8;
+}
+.book-item-info-item.publish-year{
+    opacity: 0.6;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.book-item-img {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.favorite-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.1);
+}
+
+.favorite-btn i {
+  color: #ff4d4d;
+  font-size: 1.2rem;
+}
+
+.favorite-btn.active i {
+  color: #ff0000;
+}
+
+.heart-anim {
+  display: inline-block;
+  transition: transform 0.3s;
+}
+.heart-anim.animate {
+  animation: heart-pulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes heart-pulse {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.3); }
+  40% { transform: scale(0.9); }
+  60% { transform: scale(1.2); }
+  80% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@media screen and (min-width: 600px){
+    .booklist-content{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (min-width: 992px){
+    .booklist-content{
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .book-item-img img{
+        max-width: 150px;
+    }
+}
+
+@media screen and (min-width: 992px){
+    .booklist-content{
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .book-item-img img{
+        max-width: 120px;
+    }
+}
+
+.reserve-btn {
+  margin-top: 1.2rem;
+  background: #A3BFFA;
+  color: #4A4A4A;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(163,191,250,0.08);
+}
+.reserve-btn:hover {
+  background: #7da4e7;
+}
+
+.reservation-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reservation-modal {
+  background: #fff;
+  border-radius: 18px;
+  padding: 2.5rem 2rem 2rem 2rem;
+  min-width: 320px;
+  max-width: 95vw;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(163,191,250,0.18);
+  color: #4A4A4A;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.reservation-modal h2 {
+  color: #4A4A4A;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.reservation-modal label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  color: #4A4A4A;
+}
+.reservation-modal input,
+.reservation-modal select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #A3BFFA;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  background: #f7faff;
+  color: #4A4A4A;
+}
+.reservation-modal .modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.reservation-modal button {
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.reservation-modal .confirm-btn {
+  background: #A3BFFA;
+  color: #4A4A4A;
+}
+.reservation-modal .confirm-btn:hover {
+  background: #7da4e7;
+}
+.reservation-modal .close-btn {
+  background: #f3f3f3;
+  color: #4A4A4A;
+}
+.reservation-modal .close-btn:hover {
+  background: #e0e7ef;
+}
+@media (max-width: 500px) {
+  .reservation-modal {
+    min-width: 0;
+    padding: 1.2rem 0.5rem;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lr-calendar-modal {
+  position: relative;
+}
+
+.lr-calendar-modal > div {
+  animation: slideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.role-filter {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.role-select {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #2c3e50;
+  border-radius: 4px;
+  background-color: white;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.role-select:hover {
+  background-color: #f8f9fa;
+  border-color: #34495e;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}

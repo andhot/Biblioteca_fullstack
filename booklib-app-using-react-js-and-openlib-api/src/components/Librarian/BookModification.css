@@ -1,0 +1,153 @@
+.book-modification-container {
+  background: #fff;
+  color: #4A4A4A;
+  font-family: 'Roboto', sans-serif;
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(163, 191, 250, 0.08);
+}
+
+.book-modification-container h2 {
+  font-size: 20px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.search-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.search-form input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1.5px solid #A3BFFA;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.search-form button {
+  padding: 0.75rem 1.5rem;
+  background: #A3BFFA;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.search-form button:hover {
+  background: #7b9eea;
+}
+
+.bm-error {
+  color: #e53e3e;
+  background: #ffeaea;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.bm-success {
+  color: #2b9348;
+  background: #eaffea;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.edit-form {
+  background: #f8faff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(163, 191, 250, 0.08);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.bm-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.bm-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.bm-field label {
+  font-size: 15px;
+  margin-bottom: 0.4rem;
+  color: #4A4A4A;
+}
+
+.bm-field input,
+.bm-field select {
+  padding: 0.7rem;
+  border: 1.5px solid #A3BFFA;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #fff;
+  color: #4A4A4A;
+}
+
+.bm-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+
+.bm-save {
+  background: #A3BFFA;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bm-save:hover {
+  background: #7b9eea;
+}
+
+.bm-cancel {
+  background: #f5f5f5;
+  color: #4A4A4A;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bm-cancel:hover {
+  background: #e2e8f0;
+}
+
+@media (max-width: 700px) {
+  .book-modification-container {
+    padding: 1rem;
+  }
+  .edit-form {
+    padding: 1rem;
+  }
+  .bm-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .bm-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+} 

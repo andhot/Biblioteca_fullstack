@@ -1,0 +1,27 @@
+.favorites {
+  padding: 40px 0;
+}
+
+.favorites-content {
+  margin-top: 30px;
+}
+
+.no-favorites {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
+
+.favorites-content.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+@media screen and (max-width: 768px) {
+  .favorites-content.grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+} 

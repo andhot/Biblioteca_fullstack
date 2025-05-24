@@ -1,0 +1,101 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #181a17;
+  color: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 800px;
+  width: 95%;
+  position: relative;
+  box-shadow: 0 4px 32px #000a;
+}
+
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.modal-header {
+  display: flex;
+  gap: 32px;
+}
+
+.modal-cover-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cover {
+  width: 200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px #0006;
+}
+
+.modal-info-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-title {
+  font-size: 2rem;
+  margin-bottom: 0;
+}
+
+.modal-author {
+  color: #b2ff59;
+  margin-top: 0;
+}
+
+.modal-meta {
+  margin-bottom: 16px;
+}
+
+.reserve-btn {
+  background: #ff5722;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.modal-stock.in-stock {
+  color: #b2ff59;
+  font-weight: bold;
+}
+
+.modal-description-section {
+  margin-top: 32px;
+}
+
+@media (max-width: 700px) {
+  .modal-header {
+    flex-direction: column;
+    align-items: center;
+  }
+  .modal-cover {
+    width: 140px;
+  }
+}
