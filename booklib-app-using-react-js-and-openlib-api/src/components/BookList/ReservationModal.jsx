@@ -55,11 +55,12 @@ const ReservationModal = ({ book, isOpen, onRequestClose }) => {
     };
 
     try {
-      const response = await fetch(`http://localhost:8081/reservations/${userId}/${bookId}`, {
+      const response = await fetch(`/api/reservations/${userId}/${bookId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(reservationData),
       });
 

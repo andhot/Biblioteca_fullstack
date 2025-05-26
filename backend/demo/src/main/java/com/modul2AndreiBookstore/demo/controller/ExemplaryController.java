@@ -49,7 +49,7 @@ public class ExemplaryController {
                 exemplaryService.updateMaxBorrowDays(exemplaryId, maxBorrowDays)));
     }
 
-    @PutMapping("/{exemplaryId}")
+    @DeleteMapping("/{exemplaryId}")
     public ResponseEntity<?> removeExemplary(@PathVariable(name = "exemplaryId") Long exemplaryId) {
         exemplaryService.removeExemplary(exemplaryId);
         return ResponseEntity.noContent().build();

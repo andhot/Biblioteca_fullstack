@@ -15,8 +15,15 @@
 .return-search-section form {
   display: flex;
   gap: 1rem;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto 2rem auto;
+}
+
+.search-input-container {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  align-items: center;
 }
 
 .return-search-section input {
@@ -25,6 +32,16 @@
   border: 1px solid #E2E8F0;
   border-radius: 6px;
   font-size: 16px;
+}
+
+.stock-filter {
+  padding: 0.75rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 16px;
+  background: white;
+  cursor: pointer;
+  min-width: 200px;
 }
 
 .return-search-section button {
@@ -167,6 +184,16 @@ input[type="number"] {
   .return-search-section form {
     flex-direction: column;
   }
+  
+  .search-input-container {
+    flex-direction: column;
+  }
+  
+  .stock-filter {
+    min-width: auto;
+    width: 100%;
+  }
+  
   .return-search-results {
     grid-template-columns: 1fr;
   }

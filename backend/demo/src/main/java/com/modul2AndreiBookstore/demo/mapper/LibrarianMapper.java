@@ -23,7 +23,9 @@ public class LibrarianMapper {
         librarianDTO.setPassword(librarian.getPassword());
         librarianDTO.setVerificationCode(librarian.getVerificationCode());
         if (librarian.getLibrary() != null) {
-            librarianDTO.setLibrary(LibraryMapper.library2LibraryDTO(librarian.getLibrary()));
+            librarianDTO.setLibrary(LibraryMapper.library2LibraryDTOWithoutBooks(librarian.getLibrary()));
+        } else {
+            librarianDTO.setLibrary(null);
         }
         return librarianDTO;
     }

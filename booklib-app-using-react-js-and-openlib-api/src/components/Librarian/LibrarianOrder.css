@@ -55,12 +55,29 @@
   gap: 1rem;
 }
 
+.search-input-container {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  align-items: center;
+}
+
 .search-section input {
   flex: 1;
   padding: 0.75rem;
   border: 1px solid #E2E8F0;
   border-radius: 6px;
   font-size: 16px;
+}
+
+.category-filter {
+  padding: 0.75rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 16px;
+  background: white;
+  cursor: pointer;
+  min-width: 180px;
 }
 
 .search-section button {
@@ -213,6 +230,15 @@ input[type="number"] {
 
   .search-section form {
     flex-direction: column;
+  }
+  
+  .search-input-container {
+    flex-direction: column;
+  }
+  
+  .category-filter {
+    min-width: auto;
+    width: 100%;
   }
 
   .search-results {

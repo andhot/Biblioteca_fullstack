@@ -95,10 +95,6 @@ public class ReservationService {
                 ? PageRequest.of(page, size)
                 : Pageable.unpaged();
 
-        if (reservationSearchDTO.getStartDate() == null || reservationSearchDTO.getEndDate() == null) {
-            throw new EntityNotFoundException("missing start date or end date");
-        }
-
         return reservationRepository.findReservationsForLibraryInInterval(libraryId, pageable,
                 reservationSearchDTO.getStartDate(), reservationSearchDTO.getEndDate(),
                 reservationSearchDTO.getReservationStatusList());

@@ -100,10 +100,17 @@ const AppProvider = ({ children }) => {
       const storedUserEmail = localStorage.getItem('userEmail'); // Assuming email is stored
       const storedUserId = localStorage.getItem('userId');
       const storedUserRole = localStorage.getItem('userRole');
+      const storedUserLibrary = localStorage.getItem('userLibrary');
       if (storedUserEmail && storedUserId && storedUserRole) {
-          // Need to fetch user details including ID from backend based on email
-          // For now, just set user with email, but fetching ID is needed for favorites
-          setUser({ email: storedUserEmail, id: storedUserId, role: storedUserRole });
+          let userObj = { email: storedUserEmail, id: storedUserId, role: storedUserRole };
+          if (storedUserLibrary) {
+              try {
+                  userObj.library = JSON.parse(storedUserLibrary);
+              } catch (e) {
+                  userObj.library = null;
+              }
+          }
+          setUser(userObj);
           // TODO: Fetch user details from backend here if needed (e.g., for full profile info)
       } else {
            // If essential info is missing, clear storage and set logged out

@@ -29,7 +29,7 @@ public class LibrarianController {
     public ResponseEntity<?> login(@RequestBody LibrarianDTO librarianDTO) {
         Librarian librarianToLogin = LibrarianMapper.librarianDTO2LibrarianWithoutLibrary(librarianDTO);
         Librarian existentLibrarian = librarianService.login(librarianToLogin);
-        return ResponseEntity.ok(LibrarianMapper.librarian2LibrarianDTOWithoutLibrary(existentLibrarian));
+        return ResponseEntity.ok(LibrarianMapper.librarian2LibrarianDTO(existentLibrarian));
     }
 
     @PutMapping("/{id}")

@@ -23,10 +23,10 @@ public class LibraryMapper {
         libraryDTO.setAdress(library.getAdress());
         libraryDTO.setPhoneNumber(library.getPhoneNumber());
         if (library.getBooks() != null) {
-            libraryDTO.setBooks(BookMapper.books2BookDTOs(library.getBooks()));
-        }
-        if (library.getLibrarian() != null) {
-            libraryDTO.setLibrarian(LibrarianMapper.librarian2LibrarianDTO(library.getLibrarian()));
+            // Use books2BookDTOsWithoutLibrary to break circular reference
+            libraryDTO.setBooks(library.getBooks().stream()
+                    .map(BookMapper::book2BookDTOWithoutLibrary)
+                    .toList());
         }
         return libraryDTO;
     }
@@ -49,7 +49,7 @@ public class LibraryMapper {
         libraryDTO.setAdress(library.getAdress());
         libraryDTO.setPhoneNumber(library.getPhoneNumber());
         if (library.getLibrarian() != null) {
-            libraryDTO.setLibrarian(LibrarianMapper.librarian2LibrarianDTO(library.getLibrarian()));
+            libraryDTO.setLibrarian(LibrarianMapper.librarian2LibrarianDTOWithoutLibrary(library.getLibrarian()));
         }
         return libraryDTO;
     }

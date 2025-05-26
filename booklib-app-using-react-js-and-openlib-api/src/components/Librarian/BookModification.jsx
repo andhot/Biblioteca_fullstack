@@ -69,8 +69,27 @@ const BookModification = () => {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/books/search?author=${encodeURIComponent(searchTerm.trim())}&title=${encodeURIComponent(searchTerm.trim())}`);
-        
+        // Căutăm mai întâi după titlu, apoi după autor dacă nu găsim nimic
+        let response;
+        let data;
+        let books = [];
+
+        // Încercăm mai întâi căutarea după titlu
+        response = await fetch(`${API_BASE_URL}/books/search?title=${encodeURIComponent(searchTerm.trim())}&author=`);
+        if (response.ok) {
+          data = await response.json();
+          books = data.content || [];
+        }
+
+        // Dacă nu găsim nimic după titlu, încercăm după autor
+        if (books.length === 0) {
+          response = await fetch(`${API_BASE_URL}/books/search?title=&author=${encodeURIComponent(searchTerm.trim())}`);
+          if (response.ok) {
+            data = await response.json();
+            books = data.content || [];
+          }
+        }
+
         if (!response.ok) {
             // Assuming non-OK response means no book found or an error
              if (response.status === 404) {
@@ -83,18 +102,17 @@ const BookModification = () => {
              return;
         }
 
-        const data = await response.json();
         console.log('Backend search response data:', data); // Log the received data
 
-        // Check if the response has content and if the content array is not empty
-        if (!data || !Array.isArray(data.content) || data.content.length === 0) {
+        // Check if we found any books
+        if (!books || books.length === 0) {
              setError('Nu a fost găsită nicio carte cu acest criteriu.');
              setFoundBook(null);
              setForm({
                 id: '', isbn: '', title: '', author: '', appearanceDate: '', nrOfPages: '', category: '', language: '', library: { id: '', name: '' }
              });
-        } else if (data.content.length >= 1) { // Process the first book found (or only book)
-            const bookData = data.content[0]; // Access the book object from the content array
+        } else if (books.length >= 1) { // Process the first book found (or only book)
+            const bookData = books[0]; // Access the first book from the results
             console.log('Book data extracted from content:', bookData); // Log extracted bookData
             setFoundBook(bookData);
             setForm({
@@ -110,9 +128,9 @@ const BookModification = () => {
             });
             console.log('Form state after setting:', form); // Log form state
 
-            if (data.content.length > 1) {
-                 setError(`Au fost găsite ${data.content.length} cărți. Se afișează prima carte.`);
-            } else {
+            if (books.length > 1) {
+                 setError(`Au fost găsite ${books.length} cărți. Se afișează prima carte.`);
+        } else {
                  setError(''); // Clear any previous error if exactly one book is found
             }
         }
@@ -132,7 +150,7 @@ const BookModification = () => {
         const selectedLibrary = libraries.find(lib => String(lib.id) === value); // Compare ID as strings
         setForm(prev => ({ ...prev, library: selectedLibrary || { id: '', name: '' } }));
     } else {
-        setForm(prev => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
     }
   };
 

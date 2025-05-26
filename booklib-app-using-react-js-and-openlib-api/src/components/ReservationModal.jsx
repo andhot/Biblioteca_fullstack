@@ -1,0 +1,3 @@
+const response = await fetch(`/api/reservations/${userId}/${bookId}`, {
+  // ... existing code ...
+}); 

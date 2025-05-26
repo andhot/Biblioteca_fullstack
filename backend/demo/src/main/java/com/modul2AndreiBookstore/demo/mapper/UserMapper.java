@@ -29,7 +29,7 @@ public class UserMapper {
         userDTO.setEmail(user.getEmail());
         userDTO.setPhoneNumber(user.getPhoneNumber());
         userDTO.setPassword(user.getPassword());
-        userDTO.setVerified(user.isVerified());
+        userDTO.setVerified(user.isVerified() != null ? user.isVerified() : false);
         userDTO.setVerificationCode(user.getVerificationCode());
         userDTO.setCountry(user.getCountry());
         return userDTO;

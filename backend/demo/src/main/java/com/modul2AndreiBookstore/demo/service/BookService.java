@@ -183,19 +183,8 @@ public class BookService {
             return List.of(bookByIsbn.get()); // Return a list containing the single book
         }
 
-        // If not found by ISBN, search by title or author name
-        List<Book> booksByTitle = bookRepository.findByTitleContainingIgnoreCase(searchTerm.trim());
-        List<Book> booksByAuthor = bookRepository.findByAuthorContainingIgnoreCase(searchTerm.trim());
-
-        // Combine results and remove duplicates (if any)
-        List<Book> searchResults = new java.util.ArrayList<>();
-        searchResults.addAll(booksByTitle);
-        // Add books from author search that are not already in the list (based on ID)
-        booksByAuthor.stream()
-                     .filter(book -> !searchResults.stream().anyMatch(existing -> existing.getId().equals(book.getId())))
-                     .forEach(searchResults::add);
-
-        return searchResults;
+        // Use the new safe search method with explicit text casting
+        return bookRepository.searchBooksByTitleOrAuthor(searchTerm.trim());
     }
 
     public void deleteBook(Long id) {

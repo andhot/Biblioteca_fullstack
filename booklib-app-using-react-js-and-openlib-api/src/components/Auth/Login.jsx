@@ -57,7 +57,7 @@ const Login = () => {
          }
       } else {
          const userData = JSON.parse(responseText); // Parse successful response as JSON
-      
+         console.log('USERDATA LA LOGIN:', userData); // DEBUG
          // Store user data and login state
          localStorage.setItem('isLoggedIn', 'true');
          localStorage.setItem('userEmail', userData.email);
@@ -65,6 +65,9 @@ const Login = () => {
           if (userData.id) {
                localStorage.setItem('userId', userData.id);
            }
+         if (userData.library) {
+               localStorage.setItem('userLibrary', JSON.stringify(userData.library));
+         }
 
          setUser({...userData, role: loginType}); // Add role to user object in context
          setIsLoggedIn(true);

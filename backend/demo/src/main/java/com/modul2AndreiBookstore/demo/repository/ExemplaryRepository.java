@@ -22,10 +22,12 @@ public interface ExemplaryRepository extends JpaRepository<Exemplary, Long> {
             SELECT reservation.exemplary_id FROM reservation reservation
             WHERE reservation.exemplary_id = exemplary.id
             AND NOT (reservation.end_date < :startDate OR reservation.start_date > :endDate)
-            AND reservation.reservation_status IN ('IN_PROGRESS', 'PENDING')
-            OR reservation.reservation_status = 'DELAYED'
+            AND reservation.reservation_status IN ('IN_PROGRESS', 'PENDING', 'DELAYED')
         )
         LIMIT 1
     """, nativeQuery = true)
     Optional<Exemplary> findFirstAvailableExemplary(Long bookId, LocalDate startDate, LocalDate endDate);
+
+    // Statistics methods
+    Long countByBookLibraryId(Long libraryId);
 }

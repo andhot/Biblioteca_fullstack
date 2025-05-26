@@ -12,14 +12,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.modul2AndreiBookstore.demo.entities.ReservationStatus;
 
 @RestController()
 @RequestMapping("/reservations")
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 public class ReservationController {
     @Autowired
     private ReservationService reservationService;
+
+    @RequestMapping(value = "/{userId}/{bookId}", method = RequestMethod.OPTIONS)
+    public ResponseEntity<?> handleOptions() {
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/{userId}/{bookId}")
     public ResponseEntity<?> create(@PathVariable Long userId,
@@ -35,8 +46,23 @@ public class ReservationController {
     public ResponseEntity<?> getReservationsForLibraryInInterval(@PathVariable(name = "libraryId") Long libraryId,
                                                                  @RequestParam(required = false) Integer page,
                                                                  @RequestParam(required = false) Integer size,
-                                                                 @Validated(AdvancedValidation.class)
-                                                                 @RequestBody ReservationSearchDTO reservationSearchDTO) {
+                                                                 @RequestParam(required = false) String startDate,
+                                                                 @RequestParam(required = false) String endDate,
+                                                                 @RequestParam(required = false) List<String> reservationStatusList) {
+        // Create ReservationSearchDTO from request parameters
+        ReservationSearchDTO reservationSearchDTO = new ReservationSearchDTO();
+        if (startDate != null) {
+            reservationSearchDTO.setStartDate(LocalDate.parse(startDate));
+        }
+        if (endDate != null) {
+            reservationSearchDTO.setEndDate(LocalDate.parse(endDate));
+        }
+        if (reservationStatusList != null) {
+            reservationSearchDTO.setReservationStatusList(reservationStatusList.stream()
+                                                                        .map(status -> ReservationStatus.valueOf(status.toUpperCase()))
+                                                                        .collect(Collectors.toList()));
+        }
+
         Page<Reservation> reservations = reservationService.getReservationsForLibraryInInterval(libraryId,
                 page, size, reservationSearchDTO);
         List<Reservation> reservationList = reservations.getContent();
