@@ -1,0 +1,128 @@
+/* Star Rating Component Styles */
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars-container {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.star {
+  color: #e5e7eb;
+  transition: all 0.2s ease;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Star sizes */
+.star.small {
+  font-size: 1rem;
+}
+
+.star.medium {
+  font-size: 1.25rem;
+}
+
+.star.large {
+  font-size: 1.5rem;
+}
+
+.star.extra-large {
+  font-size: 2rem;
+}
+
+/* Star states */
+.star.filled {
+  color: #fbbf24;
+  text-shadow: 0 0 2px rgba(251, 191, 36, 0.3);
+}
+
+.star.half-filled {
+  background: linear-gradient(90deg, #fbbf24 50%, #e5e7eb 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.star.empty {
+  color: #e5e7eb;
+}
+
+/* Interactive states */
+.star-rating.interactive .star {
+  cursor: pointer;
+}
+
+.star-rating.interactive .star:hover {
+  transform: scale(1.1);
+}
+
+.star-rating.interactive .star.filled:hover,
+.star-rating.interactive .star:hover {
+  color: #f59e0b;
+  text-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+/* Rating value display */
+.rating-value {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+/* Readonly state */
+.star-rating.readonly .star {
+  cursor: default;
+}
+
+/* Animation for rating changes */
+.star-rating.interactive .star {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effect for interactive stars */
+.star-rating.interactive:hover .star {
+  opacity: 0.7;
+}
+
+.star-rating.interactive:hover .star.filled,
+.star-rating.interactive:hover .star:hover,
+.star-rating.interactive:hover .star:hover ~ .star {
+  opacity: 1;
+}
+
+/* Focus states for accessibility */
+.star:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .star.small {
+    font-size: 0.875rem;
+  }
+  
+  .star.medium {
+    font-size: 1rem;
+  }
+  
+  .star.large {
+    font-size: 1.25rem;
+  }
+  
+  .star.extra-large {
+    font-size: 1.5rem;
+  }
+  
+  .rating-value {
+    font-size: 0.75rem;
+  }
+} 

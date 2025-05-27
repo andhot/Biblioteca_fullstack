@@ -3,9 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Loading from "../Loader/Loader";
 import coverImg from "../../images/cover_not_found.jpg";
 import "./BookDetails.css";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaHeart, FaRegHeart } from "react-icons/fa";
 import ReservationModal from '../BookList/ReservationModal';
-import { useGlobalContext } from '../../context'; // Import useGlobalContext
+import BookReviewsSection from '../Rating/BookReviewsSection';
+import StarRating from '../Rating/StarRating';
+import { useGlobalContext } from '../../context';
 
 // const URL = "https://openlibrary.org/works/"; // Remove or comment out this line
 
@@ -13,19 +15,25 @@ const BookDetails = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [book, setBook] = useState(null);
+  const [averageRating, setAverageRating] = useState(0);
+  const [availableExemplaries, setAvailableExemplaries] = useState(0);
+  const [animate, setAnimate] = useState(false);
   const navigate = useNavigate();
   const [showReservation, setShowReservation] = useState(false);
-  const { API_BASE_URL } = useGlobalContext(); // Use API_BASE_URL from context
+  const { API_BASE_URL, addToFavorites, removeFromFavorites, isFavorite } = useGlobalContext();
+
+  // Check if book is favorite using global context
+  const isBookFavorite = isFavorite(parseInt(id));
 
   const getBookDetails = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch book details from backend
-      const response = await fetch(`${API_BASE_URL}/books/${id}`); // Updated URL
+      const response = await fetch(`${API_BASE_URL}/books/${id}`);
       if (!response.ok) {
         throw new Error('Nu s-au putut prelua detaliile cărții');
       }
-      const data = await response.json(); // Backend returns BookDTO
+      const data = await response.json();
 
       if (data) {
         // Map data from BookDTO to the book state structure
@@ -33,7 +41,7 @@ const BookDetails = () => {
           id: data.id,
           title: data.title || 'Titlu indisponibil',
           author: data.author || 'Autor necunoscut',
-          cover_img: data.coverImageUrl && data.coverImageUrl.trim() !== '' ? data.coverImageUrl : coverImg, // Use backend coverImageUrl
+          cover_img: data.coverImageUrl && data.coverImageUrl.trim() !== '' ? data.coverImageUrl : coverImg,
           publishYear: data.appearanceDate
             ? (new Date(data.appearanceDate)).getFullYear()
             : 'An necunoscut',
@@ -41,10 +49,14 @@ const BookDetails = () => {
           language: data.language || 'Limba necunoscută',
           category: data.category || 'Categorie necunoscută',
           nrOfPages: data.nrOfPages || 'N/A',
-          description: data.description || 'Descriere indisponibilă', // Use description from backend
-          // Include other fields from BookDTO as needed
+          description: data.description || 'Descriere indisponibilă',
+          exemplaries: data.exemplaries || []
         };
         setBook(newBook);
+        
+        // Calculate available exemplaries
+        const available = data.exemplaries ? data.exemplaries.length : 0;
+        setAvailableExemplaries(available);
       } else {
         setBook(null);
       }
@@ -54,11 +66,49 @@ const BookDetails = () => {
       setBook(null);
       setLoading(false);
     }
-  }, [id, API_BASE_URL]); // Dependency on id and API_BASE_URL
+  }, [id, API_BASE_URL]);
+
+  const fetchAverageRating = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reviews/average/${id}`);
+      if (response.ok) {
+        const rating = await response.json();
+        setAverageRating(rating || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching average rating:', error);
+    }
+  }, [id, API_BASE_URL]);
+
+  const handleFavoriteToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!book) return;
+    
+    const favCover = book.cover_img && !book.cover_img.includes('undefined') && !book.cover_img.includes('null') 
+      ? book.cover_img 
+      : coverImg;
+    
+    if (isBookFavorite) {
+      removeFromFavorites(book.id);
+    } else {
+      addToFavorites({ 
+        id: book.id, 
+        cover_img: favCover, 
+        title: book.title, 
+        author: book.author, 
+        publishYear: book.publishYear 
+      });
+      setAnimate(true);
+      setTimeout(() => setAnimate(false), 600);
+    }
+  };
 
   useEffect(() => {
     getBookDetails();
-  }, [getBookDetails]);
+    fetchAverageRating();
+  }, [getBookDetails, fetchAverageRating]);
 
   if (loading) return <Loading />;
   if (!book) return <div className="book-details"><div className="container">Cartea nu a fost găsită.</div></div>;
@@ -73,14 +123,30 @@ const BookDetails = () => {
 
         <div className='book-details-header'>
           <div className='book-details-cover'>
-            <img src={book.cover_img} alt="cover img" />
+            <div className='book-cover-container'>
+              <img src={book.cover_img} alt="cover img" />
+              <button 
+                className={`favorite-btn-overlay ${isBookFavorite ? 'active' : ''}`}
+                onClick={handleFavoriteToggle}
+                title={isBookFavorite ? 'Elimină din favorite' : 'Adaugă la favorite'}
+              >
+                <span className={`heart-anim ${animate ? 'animate' : ''}`}>
+                  {isBookFavorite ? <FaHeart /> : <FaRegHeart />}
+                </span>
+              </button>
+            </div>
           </div>
           <div className='book-details-main'>
             <h2 className='book-title'>{book.title}</h2>
             <div className='book-author-rating'>
               <span className='book-author'>{book.author}</span>
-              {/* You might want to fetch rating from backend if available */}
-              <span className='book-rating'>Rating: N/A</span> 
+              <div className='book-rating'>
+                <StarRating 
+                  rating={averageRating} 
+                  size="medium" 
+                  showValue={true}
+                />
+              </div>
             </div>
             <div className='book-meta'>
               <div><b>ISBN:</b> {book.isbn}</div>
@@ -91,11 +157,27 @@ const BookDetails = () => {
               {/* Add other details from backend if available */}
             </div>
             <div className='book-action'>
-              <button className='reserve-btn' onClick={() => setShowReservation(true)}>Rezervă cartea</button>
-              {/* Price and stock info should come from backend/exemplary */}
-               {/* Since there is no price, we can remove this or display something else */}
-               {/* <span className='book-price'>Preț: N/A</span> */}
-               <span className={`book-stock ${true ? "in-stock" : "out-stock"}`}>În stoc: N/A</span> 
+              <div className='action-buttons'>
+                <button className='reserve-btn' onClick={() => setShowReservation(true)}>
+                  Rezervă cartea
+                </button>
+                <button 
+                  className={`favorite-btn-details ${isBookFavorite ? 'active' : ''}`}
+                  onClick={handleFavoriteToggle}
+                  title={isBookFavorite ? 'Elimină din favorite' : 'Adaugă la favorite'}
+                >
+                  <>
+                    {isBookFavorite ? <FaHeart /> : <FaRegHeart />}
+                    <span>{isBookFavorite ? 'Elimină din favorite' : 'Adaugă la favorite'}</span>
+                  </>
+                </button>
+              </div>
+              <div className='book-availability'>
+                <span className={`book-exemplaries ${availableExemplaries > 0 ? "available" : "unavailable"}`}>
+                  Exemplare disponibile: {availableExemplaries}
+                  {availableExemplaries === 0 && <span className="unavailable-text"> (Indisponibil)</span>}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -104,6 +186,9 @@ const BookDetails = () => {
           <h3>Descriere</h3>
           <p>{book.description}</p> {/* Display description from backend */}
         </div>
+
+        {/* Reviews Section */}
+        <BookReviewsSection bookId={id} />
 
         {/* Recommendations section (optional, depends on backend implementation) */}
         {/* <div className='book-details-recommendations'>

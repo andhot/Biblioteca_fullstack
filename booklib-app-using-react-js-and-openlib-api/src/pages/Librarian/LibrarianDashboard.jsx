@@ -30,6 +30,24 @@ const SHORTCUTS = [
 // Define possible reservation statuses based on backend enum (adjust if needed)
 const RESERVATION_STATUSES = ['PENDING', 'IN_PROGRESS', 'DELAYED', 'FINISHED', 'CANCELED'];
 
+// Function to get valid next states based on current status (matching backend logic)
+const getValidNextStates = (currentStatus) => {
+  switch (currentStatus) {
+    case 'PENDING':
+      return ['PENDING', 'IN_PROGRESS', 'CANCELED'];
+    case 'IN_PROGRESS':
+      return ['IN_PROGRESS', 'FINISHED', 'DELAYED'];
+    case 'DELAYED':
+      return ['DELAYED', 'FINISHED'];
+    case 'FINISHED':
+      return ['FINISHED'];
+    case 'CANCELED':
+      return ['CANCELED'];
+    default:
+      return [];
+  }
+};
+
 const LibrarianDashboard = () => {
   const [reservations, setReservations] = useState([]);
   const [filteredReservations, setFilteredReservations] = useState([]);
@@ -152,6 +170,12 @@ const LibrarianDashboard = () => {
      }
 
      const librarianId = user.id; // Assuming user.id is the librarianId when role is LIBRARIAN
+     
+     console.log('=== UPDATE STATUS REQUEST ===');
+     console.log('Reservation ID:', reservationId);
+     console.log('New Status:', newStatus);
+     console.log('Librarian ID:', librarianId);
+     console.log('Current reservation:', selectedReservation);
 
      try {
          const response = await fetch(`${API_BASE_URL}/reservations/${librarianId}/${reservationId}`, {
@@ -342,16 +366,37 @@ const LibrarianDashboard = () => {
                 <h3>Update Status pentru Rezervare ID: {selectedReservation.id}</h3>
                 <p>Carte: {selectedReservation.exemplary && selectedReservation.exemplary.book ? selectedReservation.exemplary.book.title : 'N/A'}</p>
                 <p>User: {selectedReservation.user ? selectedReservation.user.email : 'N/A'}</p>
-                <select
-                  value={selectedReservation.reservationStatus} // Use reservationStatus from backend data
-                  onChange={(e) => updateStatus(selectedReservation.id, e.target.value.toUpperCase())} // Convert to uppercase for backend enum
-                >
-                   {/* Dynamically generate options from RESERVATION_STATUSES */}
-                   {RESERVATION_STATUSES.map(status => (
-                       <option key={status} value={status}>{status}</option>
-                   ))}
-                </select>
-                <button onClick={() => setIsModalOpen(false)}>Close</button>
+                <p><strong>Status curent:</strong> {selectedReservation.reservationStatus}</p>
+                <div style={{ margin: '20px 0' }}>
+                  <label><strong>Selectează noul status:</strong></label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                    {RESERVATION_STATUSES.map(status => {
+                      const isCurrentStatus = status === selectedReservation.reservationStatus;
+                      const isValidTransition = getValidNextStates(selectedReservation.reservationStatus).includes(status);
+                      
+                      return (
+                        <button
+                          key={status}
+                          onClick={() => updateStatus(selectedReservation.id, status)}
+                          disabled={isCurrentStatus || !isValidTransition}
+                          style={{
+                            padding: '10px',
+                            backgroundColor: isCurrentStatus ? '#ccc' : (isValidTransition ? '#007bff' : '#f8f9fa'),
+                            color: isCurrentStatus ? '#666' : (isValidTransition ? 'white' : '#6c757d'),
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            cursor: (isCurrentStatus || !isValidTransition) ? 'not-allowed' : 'pointer'
+                          }}
+                        >
+                          {status} {isCurrentStatus ? '(Status curent)' : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <button onClick={() => setIsModalOpen(false)} style={{ marginTop: '20px', padding: '10px 20px' }}>
+                  Închide
+                </button>
               </div>
             </div>
           )}

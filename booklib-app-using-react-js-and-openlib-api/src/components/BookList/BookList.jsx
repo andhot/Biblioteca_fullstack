@@ -3,7 +3,6 @@ import Book from "../BookList/Book";
 import Loading from "../Loader/Loader";
 import coverImg from "../../images/cover_not_found.jpg";
 import "./BookList.css";
-import BookDetailsModal from "./BookDetailsModal";
 import ReservationModal from "./ReservationModal";
 
 //https://covers.openlibrary.org/b/id/240727-S.jpg
@@ -14,48 +13,64 @@ const BookList = ({ searchTerm }) => {
   const [loading, setLoading] = useState(true);
   // Modificăm titlul rezultatului pentru a reflecta căutarea sau lista completă
   const [resultTitle, setResultTitle] = useState("Cărți din bibliotecă");
-  const [selectedBook, setSelectedBook] = useState(null);
   const [showReservation, setShowReservation] = useState(false);
+  const [selectedBookForReservation, setSelectedBookForReservation] = useState(null);
   const [selectedRole, setSelectedRole] = useState('all');
 
   useEffect(() => {
     const fetchBooks = async () => {
-      setLoading(true); // Setăm loading la true la fiecare căutare/preluare inițială
+      setLoading(true);
       try {
         let url = 'http://localhost:8081/api/books';
-        // Dacă există un termen de căutare, construim URL-ul pentru search
-        if (searchTerm) {
-          // Notă: Endpoint-ul de search din backend pare să caute după bookAuthor SAU bookTitle.
-          // Aici vom trimite termenul de căutare atât pentru autor, cât și pentru titlu.
-          // Dacă vrei o căutare mai specifică (doar după autor sau doar după titlu), trebuie adaptat.
-          url = `http://localhost:8081/api/books/search?bookAuthor=${encodeURIComponent(searchTerm)}&bookTitle=${encodeURIComponent(searchTerm)}`;
+        
+        // Dacă există un termen de căutare, folosim endpoint-ul de search-by-term
+        if (searchTerm && searchTerm.trim() !== '') {
+          url = `http://localhost:8081/api/books/search-by-term?term=${encodeURIComponent(searchTerm.trim())}`;
           setResultTitle(`Rezultatele căutării pentru: "${searchTerm}"`);
         } else {
           // Dacă nu există termen de căutare, preluăm toate cărțile
-          setResultTitle("Cărți din bibliotecă");
+          setResultTitle("Toate cărțile din bibliotecă");
         }
 
+        console.log('Fetching books from:', url);
         const response = await fetch(url);
+        
         if (!response.ok) {
-          throw new Error('Nu s-au putut prelua cărțile');
+          if (response.status === 404) {
+            // Dacă nu găsește rezultate, setăm o listă goală
+            setBooks([]);
+            setResultTitle(searchTerm ? `Niciun rezultat pentru: "${searchTerm}"` : "Nu sunt cărți disponibile");
+            setLoading(false);
+            return;
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
         const data = await response.json();
-        // Backend-ul returnează Page<BookDTO> pentru /search, deci trebuie să accesăm content-ul
-        const booksData = searchTerm ? data.content : data; // Adaptăm pentru a lua lista de cărți
+        console.log('Received data:', data);
+        
+        // Pentru search-by-term, backend-ul returnează direct o listă
+        // Pentru endpoint-ul normal, returnează o listă
+        const booksData = Array.isArray(data) ? data : (data.content || []);
 
         if (booksData && booksData.length > 0) {
           setBooks(booksData);
-          if (!searchTerm) setResultTitle("Cărți din bibliotecă"); // Resetăm titlul dacă nu e căutare
+          if (searchTerm) {
+            setResultTitle(`Găsite ${booksData.length} rezultate pentru: "${searchTerm}"`);
+          } else {
+            setResultTitle(`Toate cărțile din bibliotecă (${booksData.length} cărți)`);
+          }
         } else {
           setBooks([]);
           setResultTitle(searchTerm ? `Niciun rezultat pentru: "${searchTerm}"` : "Nu sunt cărți disponibile");
         }
-        setLoading(false);
+        
       } catch (error) {
         console.error('Eroare la preluarea cărților:', error);
-        setBooks([]); // Golește lista la eroare
-        setLoading(false);
+        setBooks([]);
         setResultTitle(searchTerm ? `Eroare la căutare pentru: "${searchTerm}"` : "Eroare la preluarea cărților");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -109,7 +124,21 @@ const BookList = ({ searchTerm }) => {
               </select>
             </div>
           </div>
-          <p>Nu există cărți de afișat.</p>
+          <div className="no-results">
+            <div className="no-results-icon">📚</div>
+            <p>Nu există cărți de afișat.</p>
+            {searchTerm && (
+              <div className="search-suggestions">
+                <p>Sugestii pentru căutare:</p>
+                <ul>
+                  <li>Verifică ortografia cuvintelor</li>
+                  <li>Încearcă termeni mai generali</li>
+                  <li>Caută după autor sau titlu</li>
+                  <li>Încearcă să cauți după ISBN</li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     );
@@ -134,25 +163,18 @@ const BookList = ({ searchTerm }) => {
             </div>
           </div>
           <div className='booklist-content grid'>
-            {/* Afișăm toate cărțile filtrate, nu doar primele 30 */}
+            {/* Afișăm toate cărțile filtrate */}
             {filteredBooks.map((item) => {
               return (
-                <div
-                  key={item.id}
-                  className="book-card"
-                  onClick={e => {
-                    if (
-                      e.target.closest('.favorite-btn') ||
-                      e.target.classList.contains('favorite-btn') ||
-                      e.target.classList.contains('fa-heart')
-                    ) return;
-                    setSelectedBook(item);
-                  }}
-                >
+                <div key={item.id} className="book-card">
                   <Book {...item} />
                   <button
                     className="reserve-btn"
-                    onClick={e => { e.stopPropagation(); setSelectedBook(item); setShowReservation(true); }}
+                    onClick={e => { 
+                      e.stopPropagation(); 
+                      setSelectedBookForReservation(item); 
+                      setShowReservation(true); 
+                    }}
                   >Rezervă cartea</button>
                 </div>
               )
@@ -160,17 +182,14 @@ const BookList = ({ searchTerm }) => {
           </div>
         </div>
       </section>
-      {selectedBook && (
-        <BookDetailsModal
-          book={selectedBook}
-          onClose={() => setSelectedBook(null)}
-        />
-      )}
-      {showReservation && selectedBook && (
+      {showReservation && selectedBookForReservation && (
         <ReservationModal
-          book={selectedBook}
+          book={selectedBookForReservation}
           isOpen={showReservation}
-          onRequestClose={() => setShowReservation(false)}
+          onRequestClose={() => {
+            setShowReservation(false);
+            setSelectedBookForReservation(null);
+          }}
         />
       )}
     </div>

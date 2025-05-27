@@ -1,6 +1,7 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import './BookManagement.css';
 import { AppContext } from '../../context';
+import useSubmitOnce from '../../hooks/useSubmitOnce';
 
 const BookManagement = () => {
   const [activeTab, setActiveTab] = useState('add');
@@ -31,6 +32,8 @@ const BookManagement = () => {
   const [searchResults, setSearchResults] = useState([]);
 
   const { API_BASE_URL } = useContext(AppContext);
+  const { submitOnce, isSubmitting } = useSubmitOnce();
+  const submitButtonRef = useRef(null);
 
   // Categoriile disponibile
   const categories = [
@@ -87,62 +90,90 @@ const BookManagement = () => {
   // Handler pentru adăugarea unei cărți
   const handleAddBook = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // Disable the submit button immediately
+    if (submitButtonRef.current) {
+      submitButtonRef.current.disabled = true;
+    }
     
     if (!addForm.title.trim() || !addForm.author.trim() || !addForm.libraryId) {
       showMessage('Titlul, autorul și biblioteca sunt obligatorii!', 'error');
+      if (submitButtonRef.current) {
+        submitButtonRef.current.disabled = false;
+      }
       return;
     }
 
-    setLoading(true);
-    try {
-      const bookData = {
-        isbn: addForm.isbn || null,
-        title: addForm.title,
-        author: addForm.author,
-        appearanceDate: addForm.appearanceDate || null,
-        nrOfPages: addForm.nrOfPages ? parseInt(addForm.nrOfPages) : null,
-        category: addForm.category || null,
-        language: addForm.language || null,
-        coverImageUrl: addForm.coverImageUrl || null,
-        description: addForm.description || null
-      };
+    const submitData = {
+      title: addForm.title,
+      author: addForm.author,
+      libraryId: addForm.libraryId,
+      isbn: addForm.isbn,
+      timestamp: Date.now() // Add timestamp to make each submission unique
+    };
 
-      const response = await fetch(`${API_BASE_URL}/books/add/${addForm.libraryId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookData),
-      });
+    await submitOnce(async () => {
+      try {
+        setLoading(true);
+        
+        console.log('Submitting book creation:', addForm.title, 'by', addForm.author);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'A apărut o eroare la adăugarea cărții.');
+        const bookData = {
+          isbn: addForm.isbn || null,
+          title: addForm.title,
+          author: addForm.author,
+          appearanceDate: addForm.appearanceDate || null,
+          nrOfPages: addForm.nrOfPages ? parseInt(addForm.nrOfPages) : null,
+          category: addForm.category || null,
+          language: addForm.language || null,
+          coverImageUrl: addForm.coverImageUrl || null,
+          description: addForm.description || null
+        };
+
+        const response = await fetch(`${API_BASE_URL}/books/add/${addForm.libraryId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(bookData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'A apărut o eroare la adăugarea cărții.');
+        }
+
+        const createdBook = await response.json();
+        showMessage(`Cartea "${createdBook.title}" a fost adăugată cu succes!`, 'success');
+        
+        // Reset form
+        setAddForm({
+          isbn: '',
+          title: '',
+          author: '',
+          appearanceDate: '',
+          nrOfPages: '',
+          category: '',
+          language: '',
+          coverImageUrl: '',
+          description: '',
+          libraryId: ''
+        });
+
+      } catch (err) {
+        console.error('Error adding book:', err);
+        showMessage(err.message, 'error');
+      } finally {
+        setLoading(false);
+        // Re-enable the submit button after a delay
+        setTimeout(() => {
+          if (submitButtonRef.current) {
+            submitButtonRef.current.disabled = false;
+          }
+        }, 2000);
       }
-
-      const createdBook = await response.json();
-      showMessage(`Cartea "${createdBook.title}" a fost adăugată cu succes!`, 'success');
-      
-      // Reset form
-      setAddForm({
-        isbn: '',
-        title: '',
-        author: '',
-        appearanceDate: '',
-        nrOfPages: '',
-        category: '',
-        language: '',
-        coverImageUrl: '',
-        description: '',
-        libraryId: ''
-      });
-
-    } catch (err) {
-      console.error('Error adding book:', err);
-      showMessage(err.message, 'error');
-    } finally {
-      setLoading(false);
-    }
+    }, submitData);
   };
 
   // Handler pentru căutarea cărților pentru ștergere
@@ -382,7 +413,7 @@ const BookManagement = () => {
               />
             </div>
 
-            <button type="submit" className="submit-btn" disabled={loading}>
+            <button type="submit" className="submit-btn" disabled={loading || isSubmitting()} ref={submitButtonRef}>
               {loading ? 'Se adaugă...' : 'Adaugă Cartea'}
             </button>
           </form>

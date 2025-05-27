@@ -2,8 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './context.jsx';
 import Navbar from './components/Navbar/Navbar';
+import Footer from './components/Footer/Footer';
 import Home from './pages/Home/Home';
 import About from './pages/About/About';
+import AllBooks from './pages/AllBooks/AllBooks';
 import Login from './components/Auth/Login';
 import Authenticate from './components/Auth/Authenticate';
 import UserProfile from './components/Auth/UserProfile';
@@ -21,6 +23,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/about' element={<About />} />
+          <Route path='/all-books' element={<AllBooks />} />
           <Route path='/login' element={<Login />} />
           <Route path='/authenticate' element={<Authenticate />} />
           <Route path='/profile' element={<UserProfile />} />
@@ -30,6 +33,7 @@ function App() {
           <Route path='/librarian' element={<LibrarianDashboard />} />
           <Route path='/librarian/orders' element={<LibrarianOrder />} />
         </Routes>
+        <Footer />
       </Router>
     </AppProvider>
   );

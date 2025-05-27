@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { useGlobalContext } from '../../context.jsx';
+import { AppContext } from '../../context.jsx';
+import StarRating from '../Rating/StarRating';
 import "./BookList.css";
 
 const Book = ({ id, cover_img, title, author, publishYear, isbn, language, category }) => {
   const { addToFavorites, removeFromFavorites, isFavorite } = useGlobalContext();
+  const { API_BASE_URL } = useContext(AppContext);
   const isFav = isFavorite(id);
   const [animate, setAnimate] = useState(false);
   const [imgSrc, setImgSrc] = useState(cover_img);
+  const [averageRating, setAverageRating] = useState(0);
+
+  useEffect(() => {
+    fetchAverageRating();
+  }, [id, API_BASE_URL]);
+
+  const fetchAverageRating = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reviews/average/${id}`);
+      if (response.ok) {
+        const rating = await response.json();
+        setAverageRating(rating || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching average rating:', error);
+    }
+  };
 
   const handleFavoriteClick = (e) => {
     e.preventDefault();
@@ -21,6 +41,8 @@ const Book = ({ id, cover_img, title, author, publishYear, isbn, language, categ
       setTimeout(() => setAnimate(false), 600);
     }
   };
+
+
 
   return (
     <div className='book-item flex flex-column flex-sb'>
@@ -71,7 +93,20 @@ const Book = ({ id, cover_img, title, author, publishYear, isbn, language, categ
           <span className='text-capitalize fw-7'>Categorie: </span>
           <span>{category}</span>
         </div>
+
+        <div className='book-item-info-item rating fs-15'>
+          <span className='text-capitalize fw-7'>Rating: </span>
+          <div className='rating-container'>
+            <StarRating 
+              rating={averageRating} 
+              size="small" 
+              showValue={true}
+            />
+          </div>
+        </div>
       </div>
+
+
     </div>
   );
 };
