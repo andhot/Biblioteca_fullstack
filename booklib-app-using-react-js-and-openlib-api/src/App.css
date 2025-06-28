@@ -1,1 +1,14 @@
 /* App.css - stiluri globale pentru aplicație (poți adăuga ce vrei aici) */ 
+
+body {
+    background-color: #f8f9fa; /* Un fundal subtil pentru întreaga aplicație */
+}
+
+/* 
+  Adaugă un padding-top la containerul principal pentru a preveni
+  suprapunerea cu bara de navigare fixă.
+  Înălțimea barei de navigare este de 60px.
+*/
+.main-content {
+    padding-top: 60px;
+} 

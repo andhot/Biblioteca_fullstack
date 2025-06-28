@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./About.css";
 import aboutImg from "../../images/about-img.jpg";
 import { FaBook, FaUsers, FaHeart, FaStar, FaGraduationCap, FaGlobe, FaShieldAlt, FaClock, FaQuoteLeft, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
 const About = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -11,33 +12,19 @@ const About = () => {
     libraries: 0,
     reviews: 0
   });
+  const navigate = useNavigate();
 
   // Animate statistics on component mount
   useEffect(() => {
-    const targetStats = { books: 50000, users: 12500, libraries: 25, reviews: 8900 };
-    const duration = 2000; // 2 seconds
-    const steps = 60;
-    const stepDuration = duration / steps;
-
-    let currentStep = 0;
-    const timer = setInterval(() => {
-      currentStep++;
-      const progress = currentStep / steps;
-      
-      setStats({
-        books: Math.floor(targetStats.books * progress),
-        users: Math.floor(targetStats.users * progress),
-        libraries: Math.floor(targetStats.libraries * progress),
-        reviews: Math.floor(targetStats.reviews * progress)
-      });
-
-      if (currentStep >= steps) {
-        clearInterval(timer);
-        setStats(targetStats);
-      }
-    }, stepDuration);
-
-    return () => clearInterval(timer);
+    fetch('http://localhost:8081/api/statistics/global')
+      .then(res => res.json())
+      .then(data => setStats({
+        books: data.totalBooks,
+        users: data.totalUsers,
+        libraries: data.totalLibraries,
+        reviews: data.totalReviews
+      }))
+      .catch(() => setStats({ books: 0, users: 0, libraries: 0, reviews: 0 }));
   }, []);
 
   const features = [
@@ -77,19 +64,19 @@ const About = () => {
     {
       name: "Maria Popescu",
       role: "Student, Universitatea București",
-      text: "BookHub mi-a schimbat complet experiența de lectură. Găsesc întotdeauna cărțile de care am nevoie pentru studii și am descoperit autori noi fascinanti.",
+      text: "BookCentral mi-a schimbat complet experiența de lectură. Găsesc întotdeauna cărțile de care am nevoie pentru studii și am descoperit autori noi fascinanti.",
       rating: 5
     },
     {
       name: "Alexandru Ionescu",
       role: "Profesor de Literatură",
-      text: "Folosesc BookHub pentru a recomanda cărți elevilor mei. Platforma este intuitivă și colecția este impresionantă.",
+      text: "Folosesc BookCentral pentru a recomanda cărți elevilor mei. Platforma este intuitivă și colecția este impresionantă.",
       rating: 5
     },
     {
       name: "Elena Dumitrescu",
       role: "Cititor pasionat",
-      text: "Am citit peste 100 de cărți prin BookHub anul trecut. Sistemul de recomandări este excepțional!",
+      text: "Am citit peste 100 de cărți prin BookCentral anul trecut. Sistemul de recomandări este excepțional!",
       rating: 5
     }
   ];
@@ -135,7 +122,7 @@ const About = () => {
           <div className='hero-content'>
             <div className='hero-text'>
               <h1 className='hero-title'>
-                Despre <span className='highlight'>BookHub</span>
+                Despre <span className='highlight'>BookCentral</span>
               </h1>
               <p className='hero-subtitle'>
                 Transformăm modul în care oamenii descoperă, citesc și împărtășesc cărți. 
@@ -161,7 +148,7 @@ const About = () => {
               </div>
             </div>
             <div className='hero-image'>
-              <img src={aboutImg} alt="BookHub - Biblioteca ta digitală" />
+              <img src={aboutImg} alt="BookCentral - Biblioteca ta digitală" />
               <div className='image-overlay'>
                 <div className='floating-card'>
                   <FaBook className='card-icon' />
@@ -204,7 +191,7 @@ const About = () => {
       <section className='features-section'>
         <div className='container'>
           <div className='section-header'>
-            <h2>De Ce BookHub?</h2>
+            <h2>De Ce BookCentral?</h2>
             <p>Descoperă avantajele care ne fac unici în lumea bibliotecilor digitale</p>
           </div>
           <div className='features-grid'>
@@ -221,12 +208,12 @@ const About = () => {
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Team Section - Temporarily commented out
       <section className='team-section'>
         <div className='container'>
           <div className='section-header'>
             <h2>Echipa Noastră</h2>
-            <p>Oamenii pasionați din spatele BookHub</p>
+            <p>Oamenii pasionați din spatele BookCentral</p>
           </div>
           <div className='team-grid'>
             {teamMembers.map((member, index) => (
@@ -250,13 +237,14 @@ const About = () => {
           </div>
         </div>
       </section>
+      */}
 
       {/* Testimonials Section */}
       <section className='testimonials-section'>
         <div className='container'>
           <div className='section-header'>
             <h2>Ce Spun Utilizatorii</h2>
-            <p>Experiențele reale ale comunității BookHub</p>
+            <p>Experiențele reale ale comunității BookCentral</p>
           </div>
           <div className='testimonials-container'>
             <button className='testimonial-nav prev' onClick={prevTestimonial}>
@@ -296,16 +284,20 @@ const About = () => {
         <div className='container'>
           <div className='cta-content'>
             <h2>Începe Călătoria Ta de Lectură</h2>
-            <p>Alătură-te comunității BookHub și descoperă o lume de cărți extraordinare</p>
+            <p>Alătură-te comunității BookCentral și descoperă o lume de cărți extraordinare</p>
             <div className='cta-buttons'>
               <a href="/book" className='cta-btn primary'>
                 <FaBook />
                 Explorează Cărțile
               </a>
-              <a href="/register" className='cta-btn secondary'>
+              <button
+                className='cta-btn secondary'
+                onClick={() => navigate('/login')}
+                style={{ border: 'none', background: 'none', padding: 0, margin: 0 }}
+              >
                 <FaUsers />
                 Creează Cont Gratuit
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -339,7 +331,7 @@ const About = () => {
                   <i className='fas fa-envelope'></i>
                 </div>
                 <h4>Email</h4>
-                <p>contact@bookhub.ro<br />suport@bookhub.ro</p>
+                <p>contact@bookcentral.ro<br />suport@bookcentral.ro</p>
               </div>
             </div>
             <div className='contact-form-container'>

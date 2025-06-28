@@ -13,10 +13,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.modul2AndreiBookstore.demo.entities.*;
+import com.modul2AndreiBookstore.demo.repository.ReviewRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BookService {
@@ -29,6 +31,9 @@ public class BookService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     @Transactional
     public Book addBookToLibrary(Long libraryId, Book book) {
         if (book.getId() != null) {
@@ -39,10 +44,16 @@ public class BookService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Library with id " + libraryId + " not found"));
 
-        existentLibrary.addBook(book);
-        libraryRepository.save(existentLibrary);
+        // Set the relationship
         book.setLibrary(existentLibrary);
-        return bookRepository.save(book);
+        
+        // Save the book first
+        Book savedBook = bookRepository.save(book);
+        
+        // Add to collection (this won't trigger additional saves due to mappedBy)
+        existentLibrary.addBook(savedBook);
+        
+        return savedBook;
     }
 
     @Transactional
@@ -187,6 +198,27 @@ public class BookService {
         return bookRepository.searchBooksByTitleOrAuthor(searchTerm.trim());
     }
 
+    public List<Book> getTopRatedBooks(Integer limit) {
+        List<Book> allBooks = bookRepository.findAll();
+        
+        // Calculate average rating for each book and sort by rating
+        return allBooks.stream()
+                .filter(book -> !book.getReviews().isEmpty()) // Only books with reviews
+                .sorted((book1, book2) -> {
+                    double avg1 = book1.getReviews().stream()
+                            .mapToInt(Review::getStars)
+                            .average()
+                            .orElse(0.0);
+                    double avg2 = book2.getReviews().stream()
+                            .mapToInt(Review::getStars)
+                            .average()
+                            .orElse(0.0);
+                    return Double.compare(avg2, avg1); // Descending order
+                })
+                .limit(limit != null ? limit : 6)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     public void deleteBook(Long id) {
         Optional<Book> bookOptional = bookRepository.findById(id);
         if (bookOptional.isPresent()) {
@@ -194,6 +226,107 @@ public class BookService {
         } else {
             throw new EntityNotFoundException("Book with id " + id + " not found");
         }
+    }
+
+    @Transactional
+    public void populateSampleBooksWithReviews() {
+        // Check if we already have books with reviews
+        List<Book> booksWithReviews = bookRepository.findAll().stream()
+                .filter(book -> !book.getReviews().isEmpty())
+                .toList();
+        
+        if (!booksWithReviews.isEmpty()) {
+            return; // Already have sample data
+        }
+
+        // Get the first library or create one if none exists
+        Library library = libraryRepository.findAll().stream()
+                .findFirst()
+                .orElseGet(() -> {
+                    Library newLibrary = new Library();
+                    newLibrary.setName("Biblioteca Centrală");
+                    newLibrary.setAdress("Str. Principală nr. 1");
+                    newLibrary.setPhoneNumber("0123456789");
+                    return libraryRepository.save(newLibrary);
+                });
+
+        // Create sample books with good ratings
+        createSampleBook(library, "Harry Potter și Piatra Filozofală", "J.K. Rowling", 
+                "978-0-7475-3269-9", Category.FANTASY, 
+                "https://covers.openlibrary.org/b/isbn/9780747532699-L.jpg",
+                "Povestea unui băiat care descoperă că este vrăjitor.", new int[]{5, 5, 4, 5, 4});
+
+        createSampleBook(library, "1984", "George Orwell", 
+                "978-0-452-28423-4", Category.LITERATURE,
+                "https://covers.openlibrary.org/b/isbn/9780452284234-L.jpg",
+                "O distopie despre controlul totalitar.", new int[]{5, 4, 5, 5, 4});
+
+        createSampleBook(library, "Dune", "Frank Herbert", 
+                "978-0-441-17271-9", Category.SF,
+                "https://covers.openlibrary.org/b/isbn/9780441172719-L.jpg",
+                "Epopee science fiction pe planeta Arrakis.", new int[]{4, 5, 5, 4, 5});
+
+        createSampleBook(library, "Mândrie și Prejudecată", "Jane Austen", 
+                "978-0-14-143951-8", Category.ROMANCE,
+                "https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg",
+                "Povestea de dragoste dintre Elizabeth și Darcy.", new int[]{4, 4, 5, 4, 5});
+
+        createSampleBook(library, "Crima de pe Orientul Express", "Agatha Christie", 
+                "978-0-00-711926-0", Category.MYSTERY,
+                "https://covers.openlibrary.org/b/isbn/9780007119264-L.jpg",
+                "Hercule Poirot rezolvă o crimă în tren.", new int[]{5, 4, 4, 5, 4});
+
+        createSampleBook(library, "Sapiens", "Yuval Noah Harari", 
+                "978-0-06-231609-7", Category.SCIENCE,
+                "https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg",
+                "Istoria scurtă a omenirii.", new int[]{5, 5, 4, 4, 5});
+    }
+
+    private void createSampleBook(Library library, String title, String author, String isbn, 
+                                 Category category, String coverUrl, String description, int[] ratings) {
+        Book book = new Book();
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setIsbn(isbn);
+        book.setCategory(category);
+        book.setCoverImageUrl(coverUrl);
+        book.setDescription(description);
+        book.setAppearanceDate(LocalDate.now().minusYears(1));
+        book.setNrOfPages(300 + (int)(Math.random() * 200));
+        book.setLanguage("Română");
+        book.setLibrary(library);
+
+        Book savedBook = bookRepository.save(book);
+
+        // Create sample reviews
+        User sampleUser = userRepository.findAll().stream()
+                .findFirst()
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setFirstName("Test");
+                    newUser.setLastName("User");
+                    newUser.setEmail("test@example.com");
+                    newUser.setPassword("password");
+                    return userRepository.save(newUser);
+                });
+
+        for (int i = 0; i < ratings.length; i++) {
+            Review review = new Review();
+            review.setStars(ratings[i]);
+            review.setMessage("Carte excelentă! O recomand cu căldură.");
+            review.setDateOfCreation(LocalDate.now().minusDays(i * 10));
+            review.setBook(savedBook);
+            review.setUser(sampleUser);
+            
+            savedBook.addReview(review);
+            sampleUser.addReview(review);
+        }
+
+        bookRepository.save(savedBook);
+    }
+
+    public Long getTotalBooksCount() {
+        return bookRepository.count();
     }
 
 }

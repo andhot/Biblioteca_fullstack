@@ -13,6 +13,7 @@ import Favorites from './components/Favorites/Favorites';
 import BookDetails from './components/BookDetails/BookDetails';
 import LibrarianDashboard from './pages/Librarian/LibrarianDashboard';
 import LibrarianOrder from './components/Librarian/LibrarianOrder';
+import AdministratorDashboard from './pages/Administrator/AdministratorDashboard';
 import './App.css';
 
 function App() {
@@ -20,19 +21,22 @@ function App() {
     <AppProvider>
       <Router>
         <Navbar />
-        <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/about' element={<About />} />
-          <Route path='/all-books' element={<AllBooks />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/authenticate' element={<Authenticate />} />
-          <Route path='/profile' element={<UserProfile />} />
-          <Route path='/favorites' element={<Favorites />} />
-          <Route path='/book' element={<Home />} />
-          <Route path='/book/:id' element={<BookDetails />} />
-          <Route path='/librarian' element={<LibrarianDashboard />} />
-          <Route path='/librarian/orders' element={<LibrarianOrder />} />
-        </Routes>
+        <div className="main-content">
+          <Routes>
+            <Route path='/' element={<Home />} />
+            <Route path='/about' element={<About />} />
+            <Route path='/all-books' element={<AllBooks />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/authenticate' element={<Authenticate />} />
+            <Route path='/profile' element={<UserProfile />} />
+            <Route path='/favorites' element={<Favorites />} />
+            <Route path='/book' element={<Home />} />
+            <Route path='/book/:id' element={<BookDetails />} />
+            <Route path='/librarian' element={<LibrarianDashboard />} />
+            <Route path='/librarian/orders' element={<LibrarianOrder />} />
+            <Route path='/administrator' element={<AdministratorDashboard />} />
+          </Routes>
+        </div>
         <Footer />
       </Router>
     </AppProvider>

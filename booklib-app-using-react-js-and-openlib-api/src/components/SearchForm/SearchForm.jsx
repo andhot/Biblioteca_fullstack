@@ -1,22 +1,13 @@
-import React, {useRef, useEffect, useState} from 'react';
-import {FaSearch, FaTimes} from "react-icons/fa";
-// Eliminăm useNavigate și useGlobalContext
-// import { useNavigate } from 'react-router-dom';
-// import { useGlobalContext } from '../../context.jsx';
+import React, { useRef, useEffect, useState } from 'react';
+import { FaSearch, FaTimes } from "react-icons/fa";
 import "./SearchForm.css";
 
-// Componenta primește onSearch, placeholder și initialValue ca props
 const SearchForm = ({ onSearch, placeholder = 'Caută după titlu, autor sau ISBN...', initialValue = '' }) => {
-  // Eliminăm useGlobalContext
-  // const {setSearchTerm, setResultTitle} = useGlobalContext();
   const searchText = useRef('');
-  // Eliminăm useNavigate
-  // const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState(initialValue);
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    searchText.current.focus();
     if (initialValue) {
       searchText.current.value = initialValue;
       setSearchValue(initialValue);
@@ -27,16 +18,8 @@ const SearchForm = ({ onSearch, placeholder = 'Caută după titlu, autor sau ISB
     e.preventDefault();
     let tempSearchTerm = searchText.current.value.trim();
     
-    if (tempSearchTerm.length === 0) {
-      // Dacă căutarea este goală, apelăm onSearch cu string gol pentru a afișa toate cărțile
-      onSearch('');
-      setSearchValue('');
-      return;
-    }
-
     setIsSearching(true);
     try {
-      // Apelăm funcția onSearch primită ca prop
       await onSearch(tempSearchTerm);
       setSearchValue(tempSearchTerm);
     } catch (error) {
@@ -49,7 +32,7 @@ const SearchForm = ({ onSearch, placeholder = 'Caută după titlu, autor sau ISB
   const handleClear = () => {
     searchText.current.value = '';
     setSearchValue('');
-    onSearch(''); // Afișează toate cărțile
+    onSearch('');
     searchText.current.focus();
   };
 
@@ -64,55 +47,45 @@ const SearchForm = ({ onSearch, placeholder = 'Caută după titlu, autor sau ISB
   };
 
   return (
-    <div className='search-form'>
-      <div className='container'>
-        <div className='search-form-content'>
-          <form className='search-form' onSubmit={handleSubmit}>
-            <div className='search-form-elem flex flex-sb bg-white'>
-              <label htmlFor="search-input" className="visually-hidden">Caută carte</label>
-              <div className="search-input-container">
-                <input 
-                  id="search-input" 
-                  type="text" 
-                  className='form-control' 
-                  placeholder={placeholder} 
-                  ref={searchText}
-                  value={searchValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyPress}
-                  disabled={isSearching}
-                />
-                {searchValue && (
-                  <button 
-                    type="button" 
-                    className="clear-btn"
-                    onClick={handleClear}
-                    title="Șterge căutarea"
-                  >
-                    <FaTimes />
-                  </button>
-                )}
-              </div>
-              <button 
-                type="submit" 
-                className='search-btn flex flex-c' 
-                onClick={handleSubmit} 
-                title="Caută"
-                disabled={isSearching}
-              >
-                <FaSearch className={`search-icon ${isSearching ? 'searching' : ''}`} size={20} />
-                {isSearching && <span className="search-text">Caută...</span>}
-                {!isSearching && <span className="search-text">Caută</span>}
-              </button>
-            </div>
-          </form>
-          
-          {/* Search Tips */}
-          <div className="search-tips">
-            <p>💡 <strong>Sfaturi pentru căutare:</strong> Poți căuta după titlu, autor sau ISBN. Folosește cuvinte cheie pentru rezultate mai bune.</p>
+    <div className='modern-search-form'>
+      <form onSubmit={handleSubmit}>
+        <div className='search-input-wrapper'>
+          <div className="search-icon-container">
+            <FaSearch className={`search-icon ${isSearching ? 'searching' : ''}`} />
           </div>
+          
+          <input 
+            type="text" 
+            className='search-input' 
+            placeholder={placeholder} 
+            ref={searchText}
+            value={searchValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
+            disabled={isSearching}
+          />
+          
+          {searchValue && (
+            <button 
+              type="button" 
+              className="clear-button"
+              onClick={handleClear}
+              title="Șterge căutarea"
+            >
+              <FaTimes />
+            </button>
+          )}
+          
+          <button 
+            type="submit" 
+            className='search-button' 
+            title="Caută"
+            disabled={isSearching}
+          >
+            {isSearching ? 'Se caută...' : 'Caută'}
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   )
 }

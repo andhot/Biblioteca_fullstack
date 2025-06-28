@@ -20,5 +20,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findReviewsForBookASC(Long bookId,
                                        Pageable pageable);
 
+    @Query(value = """
+                SELECT COUNT(review) FROM review review
+                WHERE review.book.id = :bookId AND review.user.id = :userId
+            """)
+    long countByBookIdAndUserId(Long bookId, Long userId);
+
 
 }

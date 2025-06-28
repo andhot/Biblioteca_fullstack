@@ -2,6 +2,7 @@ package com.modul2AndreiBookstore.demo.mapper;
 import com.modul2AndreiBookstore.demo.dto.BookDTO;
 import com.modul2AndreiBookstore.demo.entities.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BookMapper {
     public static Book bookDTO2Book(BookDTO bookDTO) {
@@ -36,6 +37,11 @@ public class BookMapper {
         if (book.getLibrary() != null) {
             bookDTO.setLibrary(LibraryMapper.library2LibraryDTO(book.getLibrary()));
         }
+        if (book.getExemplaries() != null) {
+            bookDTO.setExemplaries(book.getExemplaries().stream()
+                .map(ExemplaryMapper::exemplary2ExemplaryDTO)
+                .collect(Collectors.toList()));
+        }
         return bookDTO;
     }
 
@@ -48,6 +54,12 @@ public class BookMapper {
     public static List<BookDTO> books2BookDTOs(List<Book> books) {
         return books.stream()
                 .map(BookMapper::book2BookDTO)
+                .toList();
+    }
+
+    public static List<BookDTO> books2BookDTOsWithoutLibrary(List<Book> books) {
+        return books.stream()
+                .map(BookMapper::book2BookDTOWithoutLibrary)
                 .toList();
     }
 
@@ -77,6 +89,12 @@ public class BookMapper {
         bookDTO.setLanguage(book.getLanguage());
         bookDTO.setCoverImageUrl(book.getCoverImageUrl());
         bookDTO.setDescription(book.getDescription());
+        // Don't set library to avoid circular reference
+        if (book.getExemplaries() != null) {
+            bookDTO.setExemplaries(book.getExemplaries().stream()
+                .map(ExemplaryMapper::exemplary2ExemplaryDTO)
+                .collect(Collectors.toList()));
+        }
         return bookDTO;
     }
 }

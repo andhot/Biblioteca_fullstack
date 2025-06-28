@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import './Footer.css';
 import logoImg from "../../images/logo.png";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaYoutube, FaBook, FaHeart, FaUsers, FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
+import { useGlobalContext } from '../../context.jsx';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const { user } = useGlobalContext();
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
@@ -46,32 +48,34 @@ const Footer = () => {
 
   return (
     <footer className='footer'>
-      {/* Newsletter Section */}
-      <div className='newsletter-section'>
-        <div className='container'>
-          <div className='newsletter-content'>
-            <div className='newsletter-text'>
-              <h3>Rămâi la curent cu noutățile</h3>
-              <p>Primește recomandări de cărți și noutăți direct în inbox-ul tău</p>
-            </div>
-            <form className='newsletter-form' onSubmit={handleNewsletterSubmit}>
-              <div className='newsletter-input-group'>
-                <input
-                  type='email'
-                  placeholder='Adresa ta de email'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <button type='submit' className='newsletter-btn'>
-                  <FaPaperPlane />
-                  {subscribed ? 'Mulțumim!' : 'Abonează-te'}
-                </button>
+      {/* Newsletter Section - Hidden for librarians */}
+      {(!user || user.role !== 'librarian') && (
+        <div className='newsletter-section'>
+          <div className='container'>
+            <div className='newsletter-content'>
+              <div className='newsletter-text'>
+                <h3>Rămâi la curent cu noutățile</h3>
+                <p>Primește recomandări de cărți și noutăți direct în inbox-ul tău</p>
               </div>
-            </form>
+              <form className='newsletter-form' onSubmit={handleNewsletterSubmit}>
+                <div className='newsletter-input-group'>
+                  <input
+                    type='email'
+                    placeholder='Adresa ta de email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <button type='submit' className='newsletter-btn'>
+                    <FaPaperPlane />
+                    {subscribed ? 'Mulțumim!' : 'Abonează-te'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Footer */}
       <div className='footer-main'>
@@ -81,12 +85,14 @@ const Footer = () => {
             <div className='footer-section company-info'>
               <Link to="/" className='footer-brand'>
                 <img src={logoImg} alt="BookHub Logo" className='footer-logo' />
-                <span className='footer-brand-name'>BookHub</span>
+                <div className="brand-text">
+                  <span className="brand-name">BookCentral</span>
+                  <span className="brand-tagline">Biblioteca Ta Digitală</span>
+                </div>
               </Link>
-              <p className='company-description'>
-                Platforma ta de încredere pentru descoperirea și împrumutarea cărților. 
-                Conectăm cititorii cu o colecție vastă de literatură din toate genurile.
-              </p>
+              <div className="footer-description">
+                Platforma ta de încredere pentru descoperirea și împrumutarea cărților. Conectăm cititorii cu o colecție vastă de literatură din toate genurile.
+              </div>
               <div className='company-stats'>
                 <div className='stat'>
                   <FaBook className='stat-icon' />

@@ -21,6 +21,11 @@ const Home = () => {
   const [showReservation, setShowReservation] = useState(false);
   const [selectedBookForReservation, setSelectedBookForReservation] = useState(null);
   const [animatingBooks, setAnimatingBooks] = useState(new Set());
+  const [currentTopRatedPage, setCurrentTopRatedPage] = useState(0);
+  const [totalBooksCount, setTotalBooksCount] = useState(0);
+  const [booksByCategory, setBooksByCategory] = useState({});
+  const [totalUsers, setTotalUsers] = useState(0);
+  const booksPerPage = 4; // Afișăm 4 cărți per pagină pentru un design mai curat
   const { API_BASE_URL } = useContext(AppContext);
   const { addToFavorites, removeFromFavorites, isFavorite } = useGlobalContext();
 
@@ -29,6 +34,18 @@ const Home = () => {
     fetchTopRatedBooks();
     fetchCategories();
     fetchLibraries();
+    fetchTotalBooksCount();
+    // Fetch statistici globale (inclusiv utilizatori)
+    fetch('http://localhost:8081/api/statistics/global')
+      .then(res => res.json())
+      .then(data => {
+        setBooksByCategory(data.booksByCategory || {});
+        setTotalUsers(data.totalUsers || 0);
+      })
+      .catch(() => {
+        setBooksByCategory({});
+        setTotalUsers(0);
+      });
   }, [API_BASE_URL]);
 
   useEffect(() => {
@@ -60,7 +77,7 @@ const Home = () => {
 
   const fetchTopRatedBooks = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/books/top-rated?limit=6`);
+      const response = await fetch(`${API_BASE_URL}/books/top-rated?limit=20`); // Aducem mai multe cărți pentru paginare
       if (response.ok) {
         const data = await response.json();
         setTopRatedBooks(data || []);
@@ -97,6 +114,23 @@ const Home = () => {
     }
   };
 
+  const fetchTotalBooksCount = async () => {
+    try {
+      // Use the pagination endpoint to get total count
+      const response = await fetch(`${API_BASE_URL}/books/pagination?page=0&size=1`);
+      if (response.ok) {
+        const data = await response.json();
+        setTotalBooksCount(data.totalElements || 0);
+      } else {
+        console.error('Error fetching books count:', response.status);
+        setTotalBooksCount(0);
+      }
+    } catch (error) {
+      console.error('Error fetching total books count:', error);
+      setTotalBooksCount(0);
+    }
+  };
+
   const fetchBookRatings = async (books) => {
     const ratings = {};
     
@@ -118,20 +152,15 @@ const Home = () => {
 
   const handleSearch = (term) => {
     if (term && term.trim() !== '') {
-      setSearchTerm(term.trim());
-      setShowSearch(true);
+      navigate(`/all-books?search=${encodeURIComponent(term.trim())}`);
     } else {
-      // Dacă termenul este gol, afișăm toate cărțile
-      setSearchTerm('');
-      setShowSearch(true);
+      navigate('/all-books');
     }
   };
 
   const handleCategoryClick = (categoryName) => {
-    // Pentru căutarea pe categorii, vom căuta după numele categoriei
-    const searchTerm = categoryName.toLowerCase();
-    setSearchTerm(searchTerm);
-    setShowSearch(true);
+    // Redirectionează către AllBooks cu filtrul de categorie aplicat
+    navigate(`/all-books?category=${encodeURIComponent(categoryName)}`);
   };
 
   const handleBookClick = (book) => {
@@ -170,27 +199,25 @@ const Home = () => {
     }
   };
 
-  const handlePopulateSampleData = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/books/populate-sample-data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        alert('Date de test adăugate cu succes!');
-        // Refresh the data
-        fetchPopularBooks();
-        fetchTopRatedBooks();
-      } else {
-        alert('Eroare la adăugarea datelor de test');
-      }
-    } catch (error) {
-      console.error('Error populating sample data:', error);
-      alert('Eroare la adăugarea datelor de test');
-    }
+
+
+  // Funcții pentru navigarea prin cărțile top-rated
+  const getTotalTopRatedPages = () => {
+    return Math.ceil(topRatedBooks.length / booksPerPage);
+  };
+
+  const getCurrentTopRatedBooks = () => {
+    const startIndex = currentTopRatedPage * booksPerPage;
+    const endIndex = startIndex + booksPerPage;
+    return topRatedBooks.slice(startIndex, endIndex);
+  };
+
+  const handlePrevTopRated = () => {
+    setCurrentTopRatedPage(prev => prev > 0 ? prev - 1 : getTotalTopRatedPages() - 1);
+  };
+
+  const handleNextTopRated = () => {
+    setCurrentTopRatedPage(prev => prev < getTotalTopRatedPages() - 1 ? prev + 1 : 0);
   };
 
   if (showSearch) {
@@ -230,7 +257,7 @@ const Home = () => {
 
           <div className="hero-stats">
             <div className="stat-item">
-              <span className="stat-number">{popularBooks.length * 100}+</span>
+              <span className="stat-number">{totalBooksCount}</span>
               <span className="stat-label">Cărți disponibile</span>
             </div>
             <div className="stat-item">
@@ -238,30 +265,12 @@ const Home = () => {
               <span className="stat-label">Biblioteci partenere</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">1,200+</span>
-              <span className="stat-label">Utilizatori activi</span>
+              <span className="stat-number">{totalUsers}</span>
+              <span className="stat-label">TOTAL UTILIZATORI</span>
             </div>
           </div>
 
-          {/* Temporary button for testing */}
-          <div style={{ marginTop: '2rem' }}>
-            <button 
-              onClick={handlePopulateSampleData}
-              style={{
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '1rem 2rem',
-                borderRadius: '12px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              🎯 Populează cu Cărți de Test
-            </button>
-          </div>
+
         </div>
       </section>
 
@@ -281,7 +290,7 @@ const Home = () => {
             >
               <div className="category-icon">{category.icon}</div>
               <h3 className="category-name">{category.displayName}</h3>
-              <p className="category-count">{category.count} cărți</p>
+              <p className="category-count">{booksByCategory[category.name] || 0} cărți</p>
             </div>
           ))}
         </div>
@@ -361,7 +370,7 @@ const Home = () => {
         
         <div className="books-carousel-container">
           <div className="books-grid">
-          {topRatedBooks.slice(0, 6).map((book) => {
+          {getCurrentTopRatedBooks().map((book) => {
             const rating = bookRatings[book.id] || 0;
             const reviewCount = book.reviewCount || 0;
             const isNewBook = book.appearanceDate && 
@@ -454,8 +463,32 @@ const Home = () => {
         </div>
         
         <div className="books-navigation">
-          <button className="nav-arrow">‹</button>
-          <button className="nav-arrow">›</button>
+          <button 
+            className="nav-arrow" 
+            onClick={handlePrevTopRated}
+            disabled={topRatedBooks.length <= booksPerPage}
+            title="Cărțile anterioare"
+          >
+            ‹
+          </button>
+          <div className="navigation-dots">
+            {Array.from({ length: getTotalTopRatedPages() }, (_, index) => (
+              <button
+                key={index}
+                className={`nav-dot ${index === currentTopRatedPage ? 'active' : ''}`}
+                onClick={() => setCurrentTopRatedPage(index)}
+                title={`Pagina ${index + 1}`}
+              />
+            ))}
+          </div>
+          <button 
+            className="nav-arrow" 
+            onClick={handleNextTopRated}
+            disabled={topRatedBooks.length <= booksPerPage}
+            title="Cărțile următoare"
+          >
+            ›
+          </button>
         </div>
       </section>
 

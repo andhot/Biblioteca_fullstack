@@ -89,13 +89,52 @@
 }
 
 .bm-field input,
-.bm-field select {
+.bm-field select,
+.bm-field textarea {
   padding: 0.7rem;
   border: 1.5px solid #A3BFFA;
   border-radius: 8px;
   font-size: 16px;
   background: #fff;
   color: #4A4A4A;
+  font-family: inherit;
+}
+
+.bm-field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.bm-field input:focus,
+.bm-field select:focus,
+.bm-field textarea:focus {
+  outline: none;
+  border-color: #7b9eea;
+  box-shadow: 0 0 0 3px rgba(163, 191, 250, 0.2);
+}
+
+/* Cover Preview */
+.cover-preview {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.cover-preview img {
+  max-width: 120px;
+  max-height: 160px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e5e7eb;
+}
+
+.cover-error {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #ffeaea;
+  border-radius: 6px;
+  border: 1px solid #f5c6cb;
 }
 
 .bm-actions {

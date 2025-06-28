@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.modul2AndreiBookstore.demo.dto.LibraryDTO;
 import com.modul2AndreiBookstore.demo.mapper.LibraryMapper;
 import com.modul2AndreiBookstore.demo.repository.LibraryRepository.LibraryNameOnly;
+import com.modul2AndreiBookstore.demo.entities.Library;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,15 @@ public class LibraryController {
                     dto.setName(projection.getName());
                     return dto;
                 })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(libraryDTOs);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<List<LibraryDTO>> getAllLibrariesWithDetails() {
+        List<Library> libraries = libraryService.findAll();
+        List<LibraryDTO> libraryDTOs = libraries.stream()
+                .map(LibraryMapper::library2LibraryDTOWithoutBooks)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(libraryDTOs);
     }

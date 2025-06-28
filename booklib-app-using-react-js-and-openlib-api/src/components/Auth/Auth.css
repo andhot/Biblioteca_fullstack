@@ -16,7 +16,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
   color: #4A4A4A;
 }
 
@@ -115,7 +115,7 @@
   }
 }
 
-/* Stiluri noi pentru login user/librarian */
+/* Stiluri noi pentru login user/librarian/administrator */
 .login-container {
   max-width: 400px;
   margin: 50px auto;
@@ -128,25 +128,36 @@
 
 .login-type {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .login-type button {
   flex: 1;
-  padding: 0.75rem;
+  min-width: 120px;
+  padding: 0.75rem 0.5rem;
   border: 1px solid #E2E8F0;
   background: white;
   color: #4A4A4A;
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.2s;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.login-type button:hover {
+  background: #F7FAFC;
+  border-color: #A3BFFA;
 }
 
 .login-type button.active {
   background: #A3BFFA;
   color: white;
   border-color: #A3BFFA;
+  box-shadow: 0 2px 4px rgba(163, 191, 250, 0.3);
 }
 
 .login-container form {
@@ -200,20 +211,21 @@
 }
 
 .verification-section button {
+  width: 100%;
   padding: 10px;
   background: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 10px;
+  margin-bottom: 10px;
 }
 
 .verification-section a {
   color: #007bff;
   text-decoration: none;
   display: block;
-  margin-top: 10px;
+  text-align: center;
 }
 
 .auth-links {
@@ -231,4 +243,22 @@
 .auth-link:hover {
   color: #8AA3F5;
   text-decoration: underline;
+}
+
+/* Responsive adjustments for login buttons */
+@media (max-width: 480px) {
+  .login-type {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .login-type button {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .auth-box {
+    max-width: 100%;
+    margin: 0 1rem;
+  }
 } 

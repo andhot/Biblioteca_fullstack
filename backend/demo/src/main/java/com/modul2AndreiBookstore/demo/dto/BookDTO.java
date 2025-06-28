@@ -6,6 +6,7 @@ import com.modul2AndreiBookstore.demo.entities.Category;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class BookDTO {
     private Long id;
@@ -22,6 +23,7 @@ public class BookDTO {
     private String coverImageUrl;
     private String description;
     private LibraryDTO library;
+    private List<ExemplaryDTO> exemplaries;
 
     public Long getId() {
         return id;
@@ -109,5 +111,13 @@ public class BookDTO {
 
     public void setLibrary(LibraryDTO library) {
         this.library = library;
+    }
+
+    public List<ExemplaryDTO> getExemplaries() {
+        return exemplaries;
+    }
+
+    public void setExemplaries(List<ExemplaryDTO> exemplaries) {
+        this.exemplaries = exemplaries;
     }
 }

@@ -403,30 +403,12 @@
 }
 
 .top-rated-books-section .books-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
-  transition: transform 0.3s ease;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  padding-bottom: 1rem;
-}
-
-.top-rated-books-section .books-grid::-webkit-scrollbar {
-  height: 8px;
-}
-
-.top-rated-books-section .books-grid::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-.top-rated-books-section .books-grid::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-.top-rated-books-section .books-grid::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  transition: opacity 0.3s ease;
+  padding: 1rem 0;
+  min-height: 450px; /* Menține înălțimea constantă pentru toate paginile */
 }
 
 .modern-book-card {
@@ -438,8 +420,7 @@
   border: 2px solid #e5e7eb;
   position: relative;
   height: 420px;
-  min-width: 280px;
-  flex-shrink: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -704,7 +685,8 @@
 .books-navigation {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  align-items: center;
+  gap: 1.5rem;
   margin-top: 2rem;
 }
 
@@ -712,27 +694,58 @@
   background: white;
   border: 2px solid #e5e7eb;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   color: #1a1a1a;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
-.nav-arrow:hover {
-  background: #f8fafc;
+.nav-arrow:hover:not(:disabled) {
+  background: #2563eb;
   border-color: #2563eb;
-  color: #2563eb;
-  transform: scale(1.05);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.nav-arrow.disabled {
-  opacity: 0.5;
+.nav-arrow:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
+  transform: none;
+}
+
+/* Navigation dots */
+.navigation-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.nav-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-dot:hover {
+  background: #94a3b8;
+  transform: scale(1.2);
+}
+
+.nav-dot.active {
+  background: #2563eb;
+  transform: scale(1.3);
 }
 
 /* Recent Books Section - Keep for backward compatibility */
@@ -1012,12 +1025,22 @@
   }
 
   .top-rated-books-section .books-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
   
   .modern-book-card {
-    min-width: 250px;
     height: 380px;
+  }
+  
+  .books-navigation {
+    gap: 1rem;
+  }
+  
+  .nav-arrow {
+    width: 45px;
+    height: 45px;
+    font-size: 1.1rem;
   }
   
   .favorite-btn-overlay {
@@ -1119,15 +1142,30 @@
   }
 
   .top-rated-books-section .books-grid {
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
   
   .modern-book-card {
-    min-width: 220px;
     height: 360px;
   }
   
   .modern-book-info {
     padding: 1rem;
+  }
+  
+  .books-navigation {
+    gap: 0.8rem;
+  }
+  
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .nav-dot {
+    width: 10px;
+    height: 10px;
   }
 } 

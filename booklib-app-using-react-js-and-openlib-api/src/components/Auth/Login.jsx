@@ -6,7 +6,7 @@ import './Auth.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loginType, setLoginType] = useState('user'); // 'user' sau 'librarian'
+  const [loginType, setLoginType] = useState('user'); // 'user', 'librarian', sau 'administrator'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -18,7 +18,20 @@ const Login = () => {
     setLoading(true);
 
     // Construct the correct login endpoint using API_BASE_URL
-    const loginEndpoint = loginType === 'user' ? `${API_BASE_URL}/users/login` : `${API_BASE_URL}/librarians/login`;
+    let loginEndpoint;
+    switch (loginType) {
+      case 'user':
+        loginEndpoint = `${API_BASE_URL}/users/login`;
+        break;
+      case 'librarian':
+        loginEndpoint = `${API_BASE_URL}/librarians/login`;
+        break;
+      case 'administrator':
+        loginEndpoint = `${API_BASE_URL}/administrators/login`;
+        break;
+      default:
+        loginEndpoint = `${API_BASE_URL}/users/login`;
+    }
 
     try {
       console.log("Attempting login as", loginType, "with email:", email);
@@ -31,12 +44,12 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const responseText = await response.text(); // Read as text first
+      const responseText = await response.text(); 
       console.log("Login response status:", response.status);
       console.log("Login response text:", responseText);
 
       if (!response.ok) {
-        // Try to parse JSON error if Content-Type is application/json
+      
          if (response.headers.get('content-type')?.includes('application/json')) {
              try {
                  const errorData = JSON.parse(responseText);
@@ -44,13 +57,13 @@ const Login = () => {
                  setError(errorMsg);
                  console.error(`Login error (${loginType}):`, errorData);
              } catch (jsonError) {
-                  // If JSON parsing fails, use the raw text
+            
                  const errorMsg = `Autentificare ${loginType} eșuată: ${responseText || response.statusText}`;
                  setError(errorMsg);
                  console.error(`Login error (${loginType}) - JSON parse failed:`, jsonError, "Response text:", responseText);
              }
          } else {
-             // Handle non-JSON error responses (like HTML error pages)
+            
              const errorMsg = `Autentificare ${loginType} eșuată. Răspuns neașteptat de la server.`;
              setError(errorMsg);
              console.error(`Login error (${loginType}) - Non-JSON response:`, responseText);
@@ -72,10 +85,16 @@ const Login = () => {
          setUser({...userData, role: loginType}); // Add role to user object in context
          setIsLoggedIn(true);
 
-         if (loginType === 'librarian') {
-           navigate('/librarian');
-         } else {
-           navigate('/profile'); // Or wherever you want to redirect users
+         // Redirect based on login type
+         switch (loginType) {
+           case 'librarian':
+             navigate('/librarian');
+             break;
+           case 'administrator':
+             navigate('/administrator');
+             break;
+           default:
+             navigate('/profile'); // For regular users
          }
       }
     } catch (err) {
@@ -106,6 +125,14 @@ const Login = () => {
             disabled={loading}
           >
             Login ca Librarian
+          </button>
+          <button
+            type="button"
+            className={loginType === 'administrator' ? 'active' : ''}
+            onClick={() => setLoginType('administrator')}
+            disabled={loading}
+          >
+            Login ca Administrator
           </button>
         </div>
         {error && <p className="error-message">{error}</p>}

@@ -19,13 +19,29 @@ public class ExemplaryController {
     private ExemplaryService exemplaryService;
 
     @PostMapping("/{bookId}/{nrExemplaries}")
-    public ResponseEntity<?> create(@PathVariable(name = "bookId") Long bookId,
+    public synchronized ResponseEntity<?> create(@PathVariable(name = "bookId") Long bookId,
                                     @PathVariable(name = "nrExemplaries") Integer nrExemplaries,
                                     @RequestBody ExemplaryDTO exemplaryDTO) {
-        Exemplary exemplaryToCreate = ExemplaryMapper.exemplaryDTO2Exemplary(exemplaryDTO);
-        List<Exemplary> createdExemplary = exemplaryService.create(bookId, nrExemplaries, exemplaryToCreate);
+        
+        System.out.println("=== EXEMPLARY CREATION REQUEST ===");
+        System.out.println("BookId: " + bookId + ", Number of exemplaries: " + nrExemplaries);
+        System.out.println("Publisher: " + exemplaryDTO.getPublisher());
+        System.out.println("Timestamp: " + java.time.LocalDateTime.now());
+        System.out.println("Thread: " + Thread.currentThread().getName());
+        
+        try {
+            Exemplary exemplaryToCreate = ExemplaryMapper.exemplaryDTO2Exemplary(exemplaryDTO);
+            List<Exemplary> createdExemplary = exemplaryService.create(bookId, nrExemplaries, exemplaryToCreate);
 
-        return ResponseEntity.ok(ExemplaryMapper.exemplaryListToDTOList(createdExemplary));
+            System.out.println("Exemplaries created successfully, count: " + createdExemplary.size());
+            System.out.println("=== END EXEMPLARY CREATION ===");
+            
+            return ResponseEntity.ok(ExemplaryMapper.exemplaryListToDTOList(createdExemplary));
+        } catch (RuntimeException e) {
+            System.out.println("Error creating exemplaries: " + e.getMessage());
+            System.out.println("=== END EXEMPLARY CREATION (ERROR) ===");
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping(path = "/{bookId}")

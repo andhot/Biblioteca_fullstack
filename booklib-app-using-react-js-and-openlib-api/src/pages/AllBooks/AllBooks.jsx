@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../../context';
 import { useGlobalContext } from '../../context';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import StarRating from '../../components/Rating/StarRating';
 import ReservationModal from '../../components/BookList/ReservationModal';
+import SearchForm from '../../components/SearchForm/SearchForm';
 import './AllBooks.css';
 
 const AllBooks = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,7 @@ const AllBooks = () => {
   const [showMyBooks, setShowMyBooks] = useState(false);
   const [sortBy, setSortBy] = useState('recommended');
   const [animatingBooks, setAnimatingBooks] = useState(new Set());
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [showReservation, setShowReservation] = useState(false);
   const [selectedBookForReservation, setSelectedBookForReservation] = useState(null);
@@ -39,6 +42,19 @@ const AllBooks = () => {
     { label: 'Autor Z-A', value: 'author-desc' }
   ];
 
+  // Handle URL parameters on component mount
+  useEffect(() => {
+    // Preia parametrul 'search' din URL și setează searchTerm
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl !== null && searchFromUrl !== searchTerm) {
+      setSearchTerm(searchFromUrl);
+    }
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (showMyBooks) {
       fetchMyBooks();
@@ -56,7 +72,7 @@ const AllBooks = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [books, selectedCategory, selectedAuthor, selectedPublisher, availabilityFilter, sortBy, bookRatings]);
+  }, [books, selectedCategory, selectedAuthor, selectedPublisher, availabilityFilter, sortBy, bookRatings, searchTerm]);
 
   const fetchAllBooks = async () => {
     try {
@@ -168,6 +184,17 @@ const AllBooks = () => {
   const applyFiltersAndSort = () => {
     let filtered = [...books];
 
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(book => 
+        (book.title && book.title.toLowerCase().includes(searchLower)) ||
+        (book.author && book.author.toLowerCase().includes(searchLower)) ||
+        (book.isbn && book.isbn.toLowerCase().includes(searchLower)) ||
+        (book.category && book.category.toLowerCase().includes(searchLower))
+      );
+    }
+
     // Apply filters
     if (selectedCategory) {
       filtered = filtered.filter(book => 
@@ -217,6 +244,10 @@ const AllBooks = () => {
     setFilteredBooks(filtered);
   };
 
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
+
   const clearFilters = () => {
     setSelectedCategory('');
     setSelectedAuthor('');
@@ -224,6 +255,9 @@ const AllBooks = () => {
     setAvailabilityFilter('all');
     setShowMyBooks(false);
     setSortBy('recommended');
+    setSearchTerm('');
+    // Clear URL parameters
+    setSearchParams({});
   };
 
   const handleBookClick = (book) => {
@@ -283,10 +317,21 @@ const AllBooks = () => {
   return (
     <div className="all-books-container">
       <div className="all-books-header">
-        <h1>{showMyBooks ? 'Cărțile mele favorite' : 'Cărți'}</h1>
-        <p className="books-count">
-          {filteredBooks.length} {showMyBooks ? 'cărți favorite' : 'produse'}
-        </p>
+        <div className="header-content">
+          <div className="header-text">
+            <h1>{showMyBooks ? 'Cărțile mele favorite' : 'Cărți'}</h1>
+            <p className="books-count">
+              {filteredBooks.length} {showMyBooks ? 'cărți favorite' : 'produse'}
+            </p>
+          </div>
+          <div className="header-search">
+            <SearchForm 
+              onSearch={handleSearch} 
+              initialValue={searchTerm}
+              placeholder="Caută după titlu, autor, ISBN sau categorie..."
+            />
+          </div>
+        </div>
       </div>
 
       <div className="all-books-content">
@@ -296,9 +341,9 @@ const AllBooks = () => {
             <h3>Filtrează</h3>
             <button className="clear-filters-btn" onClick={clearFilters}>
               Șterge filtrele
-              {(selectedCategory || selectedAuthor || selectedPublisher || availabilityFilter !== 'all' || showMyBooks) && (
+              {(selectedCategory || selectedAuthor || selectedPublisher || availabilityFilter !== 'all' || showMyBooks || searchTerm) && (
                 <span style={{ marginLeft: '0.5rem', background: '#dc2626', color: 'white', borderRadius: '50%', padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>
-                  {[selectedCategory, selectedAuthor, selectedPublisher, availabilityFilter !== 'all', showMyBooks].filter(Boolean).length}
+                  {[selectedCategory, selectedAuthor, selectedPublisher, availabilityFilter !== 'all', showMyBooks, searchTerm].filter(Boolean).length}
                 </span>
               )}
             </button>

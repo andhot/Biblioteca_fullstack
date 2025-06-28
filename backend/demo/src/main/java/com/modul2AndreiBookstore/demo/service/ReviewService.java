@@ -42,9 +42,14 @@ public class ReviewService {
     @Transactional
     public Review addReviewToBook(Review review, Long bookId, Long userId) {
 
-
         if (review.getId() != null) {
             throw new RuntimeException("You cannot provide an ID to a new review that you want to create");
+        }
+
+        // Check if user already has a review for this book
+        long existingReviewsCount = reviewRepository.countByBookIdAndUserId(bookId, userId);
+        if (existingReviewsCount > 0) {
+            throw new RuntimeException("User has already submitted a review for this book");
         }
 
         Book existentbook = bookRepository.findById(bookId).orElseThrow(() -> new EntityNotFoundException(
@@ -53,16 +58,20 @@ public class ReviewService {
         User existentuser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(
                 "User with id " + userId + " not found"
         ));
-        // sa fac metoda in entitatea user sa adaug preview
 
+        // Set the relationships
         review.setDateOfCreation(LocalDate.now());
-        existentbook.addReview(review);
-        bookRepository.save(existentbook);
         review.setBook(existentbook);
-        existentuser.addReview(review);
-        userRepository.save(existentuser);
-        return reviewRepository.save(review);
-
+        review.setUser(existentuser);
+        
+        // Save the review first
+        Review savedReview = reviewRepository.save(review);
+        
+        // Add to collections (this won't trigger additional saves due to mappedBy)
+        existentbook.addReview(savedReview);
+        existentuser.addReview(savedReview);
+        
+        return savedReview;
     }
 
     public void RemoveReviewFromBook(Long reviewId, Long bookId) {

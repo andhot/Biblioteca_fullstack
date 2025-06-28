@@ -31,6 +31,9 @@ public class StatisticsService {
     @Autowired
     private ExemplaryRepository exemplaryRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     public StatisticsDTO getGlobalStatistics() {
         StatisticsDTO statistics = new StatisticsDTO();
 
@@ -40,6 +43,7 @@ public class StatisticsService {
         statistics.setTotalUsers(userRepository.count());
         statistics.setTotalLibraries(libraryRepository.count());
         statistics.setTotalExemplaries(exemplaryRepository.count());
+        statistics.setTotalReviews(reviewRepository.count());
 
         // Reservation statistics by status
         statistics.setActiveReservations(reservationRepository.countByReservationStatus(ReservationStatus.IN_PROGRESS));
@@ -211,18 +215,12 @@ public class StatisticsService {
     }
 
     private Double getAverageReservationDuration() {
-        List<Object[]> results = reservationRepository.getAverageReservationDuration();
-        if (!results.isEmpty() && results.get(0)[0] != null) {
-            return ((Number) results.get(0)[0]).doubleValue();
-        }
-        return 0.0;
+        Double result = reservationRepository.getAverageReservationDuration();
+        return result != null ? result : 0.0;
     }
 
     private Double getAverageReservationDurationForLibrary(Long libraryId) {
-        List<Object[]> results = reservationRepository.getAverageReservationDurationForLibrary(libraryId);
-        if (!results.isEmpty() && results.get(0)[0] != null) {
-            return ((Number) results.get(0)[0]).doubleValue();
-        }
-        return 0.0;
+        Double result = reservationRepository.getAverageReservationDurationForLibrary(libraryId);
+        return result != null ? result : 0.0;
     }
 } 

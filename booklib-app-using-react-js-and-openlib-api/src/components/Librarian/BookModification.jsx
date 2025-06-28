@@ -19,6 +19,8 @@ const BookModification = () => {
     nrOfPages: '',
     category: '', // Will store backend enum string
     language: '',
+    coverImageUrl: '', // URL pentru imaginea de copertă
+    description: '', // Descrierea cărții
     library: { id: '', name: '' } // Will store library object with id and name
   });
   const [error, setError] = useState('');
@@ -60,6 +62,8 @@ const BookModification = () => {
       nrOfPages: '',
       category: '',
       language: '',
+      coverImageUrl: '',
+      description: '',
       library: { id: '', name: '' }
     });
 
@@ -109,7 +113,7 @@ const BookModification = () => {
              setError('Nu a fost găsită nicio carte cu acest criteriu.');
              setFoundBook(null);
              setForm({
-                id: '', isbn: '', title: '', author: '', appearanceDate: '', nrOfPages: '', category: '', language: '', library: { id: '', name: '' }
+                id: '', isbn: '', title: '', author: '', appearanceDate: '', nrOfPages: '', category: '', language: '', coverImageUrl: '', description: '', library: { id: '', name: '' }
              });
         } else if (books.length >= 1) { // Process the first book found (or only book)
             const bookData = books[0]; // Access the first book from the results
@@ -124,6 +128,8 @@ const BookModification = () => {
                 nrOfPages: bookData.nrOfPages == null ? '' : String(bookData.nrOfPages),
                 category: bookData.category == null ? '' : bookData.category,
                 language: bookData.language == null ? '' : bookData.language,
+                coverImageUrl: bookData.coverImageUrl == null ? '' : bookData.coverImageUrl,
+                description: bookData.description == null ? '' : bookData.description,
                 library: bookData.library == null ? { id: '', name: '' } : { id: bookData.library.id, name: bookData.library.name },
             });
             console.log('Form state after setting:', form); // Log form state
@@ -220,6 +226,8 @@ const BookModification = () => {
             nrOfPages: updatedBookData.nrOfPages == null ? '' : String(updatedBookData.nrOfPages),
             category: updatedBookData.category == null ? '' : updatedBookData.category,
             language: updatedBookData.language == null ? '' : updatedBookData.language,
+            coverImageUrl: updatedBookData.coverImageUrl == null ? '' : updatedBookData.coverImageUrl,
+            description: updatedBookData.description == null ? '' : updatedBookData.description,
             library: updatedBookData.library || { id: '', name: '' }, // Ensure library is an object
         });
         setSuccess('Modificările au fost salvate cu succes!');
@@ -299,6 +307,49 @@ const BookModification = () => {
                 <option value="">Selectați o bibliotecă</option>
                 {libraries.map(lib => <option key={lib.id} value={lib.id}>{lib.name}</option>)}
               </select>
+            </div>
+          </div>
+          <div className="bm-row">
+            <div className="bm-field">
+              <label>URL Copertă</label>
+              <input 
+                type="url" 
+                name="coverImageUrl" 
+                value={form.coverImageUrl} 
+                onChange={handleChange}
+                placeholder="https://example.com/cover.jpg"
+              />
+              {form.coverImageUrl && (
+                <div className="cover-preview">
+                  <img 
+                    src={form.coverImageUrl} 
+                    alt="Previzualizare copertă" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                    onLoad={(e) => {
+                      e.target.style.display = 'block';
+                      e.target.nextSibling.style.display = 'none';
+                    }}
+                  />
+                  <div className="cover-error" style={{display: 'none'}}>
+                    ❌ URL invalid sau imagine indisponibilă
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="bm-row">
+            <div className="bm-field">
+              <label>Descriere</label>
+              <textarea 
+                name="description" 
+                value={form.description} 
+                onChange={handleChange}
+                rows="4"
+                placeholder="Introduceți o descriere a cărții..."
+              />
             </div>
           </div>
           <div className="bm-actions">

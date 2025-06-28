@@ -39,9 +39,12 @@ public class ExemplaryService {
             newExemplary.setMaxBorrowDays(exemplary.getMaxBorrowDays());
             newExemplary.setBook(existentBook);
 
-            existentBook.addExemplary(newExemplary);
-            bookRepository.save(existentBook);
-            exemplaries.add(exemplaryRepository.save(newExemplary));
+            // Save the exemplary first
+            Exemplary savedExemplary = exemplaryRepository.save(newExemplary);
+            
+            // Add to collection (this won't trigger additional saves due to mappedBy)
+            existentBook.addExemplary(savedExemplary);
+            exemplaries.add(savedExemplary);
         }
 
         return exemplaries;

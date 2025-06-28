@@ -2,8 +2,12 @@ import React from 'react';
 import Navbar from "../Navbar/Navbar";
 import SearchForm from "../SearchForm/SearchForm";
 import "./Header.css";
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user'));
+
   return (
     <div className='holder'>
         <header className='header'>

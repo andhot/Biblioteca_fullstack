@@ -5,7 +5,7 @@ import { useGlobalContext } from '../../context'; // Import useGlobalContext
 
 const Authenticate = () => {
   const [step, setStep] = useState(1); // 1: Registration form, 2: Email verification
-  const [registrationType, setRegistrationType] = useState('user'); // 'user' sau 'librarian'
+  const [registrationType, setRegistrationType] = useState('user'); // 'user', 'librarian', sau 'administrator'
   const [formData, setFormData] = useState({
     // Common fields
     email: '',
@@ -24,11 +24,15 @@ const Authenticate = () => {
     libraryName: '',
     libraryAddress: '',
     libraryPhoneNumber: '',
+    // Administrator specific fields
+    adminFirstName: '',
+    adminLastName: '',
     // Verification code (for user step 2)
     verificationCode: '',
   });
   const [userIdForVerification, setUserIdForVerification] = useState(null); // To store userId after successful user registration
   const [librarianIdForVerification, setLibrarianIdForVerification] = useState(null); // To store librarianId after successful librarian registration
+  const [administratorIdForVerification, setAdministratorIdForVerification] = useState(null); // To store administratorId after successful administrator registration
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -45,7 +49,11 @@ const Authenticate = () => {
        setLibrarianIdForVerification(location.state.librarianId);
        setStep(2); // Jump to verification step
      }
-   }, [location.state?.userId, location.state?.librarianId]);
+     if (location.state?.administratorId) {
+       setAdministratorIdForVerification(location.state.administratorId);
+       setStep(2); // Jump to verification step
+     }
+   }, [location.state?.userId, location.state?.librarianId, location.state?.administratorId]);
 
 
   const handleInputChange = (e) => {
@@ -61,42 +69,68 @@ const Authenticate = () => {
     setError('');
     setLoading(true);
 
-    const registrationEndpoint = registrationType === 'user' ? `${API_BASE_URL}/users` : `${API_BASE_URL}/librarians`;
+    let registrationEndpoint;
     let requestBody = {};
 
-    if (registrationType === 'user') {
-      if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.phoneNumber) {
-         setError('Prenumele, Numele, Email-ul, Parola și Numărul de telefon sunt obligatorii.');
-         setLoading(false);
-         return;
-      }
-      requestBody = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        phoneNumber: formData.phoneNumber,
-        yearOfBirth: parseInt(formData.yearOfBirth) || null, // Convert to number, null if empty
-        country: formData.country,
-        gender: formData.gender,
-      };
-    } else { // librarian registration
-       if (!formData.name || !formData.email || !formData.password || 
-           !formData.libraryName || !formData.libraryAddress || !formData.libraryPhoneNumber) {
-         setError('Toate câmpurile sunt obligatorii pentru înregistrarea unui bibliotecar.');
-         setLoading(false);
-         return;
-       }
-       requestBody = {
-         name: formData.name,
-         email: formData.email,
-         password: formData.password,
-         library: {
-           name: formData.libraryName,
-           adress: formData.libraryAddress,
-           phoneNumber: formData.libraryPhoneNumber
-         }
-       };
+    switch (registrationType) {
+      case 'user':
+        registrationEndpoint = `${API_BASE_URL}/users`;
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.phoneNumber) {
+           setError('Prenumele, Numele, Email-ul, Parola și Numărul de telefon sunt obligatorii.');
+           setLoading(false);
+           return;
+        }
+        requestBody = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          phoneNumber: formData.phoneNumber,
+          yearOfBirth: parseInt(formData.yearOfBirth) || null, // Convert to number, null if empty
+          country: formData.country,
+          gender: formData.gender,
+        };
+        break;
+      
+      case 'librarian':
+        registrationEndpoint = `${API_BASE_URL}/librarians`;
+        if (!formData.name || !formData.email || !formData.password || 
+            !formData.libraryName || !formData.libraryAddress || !formData.libraryPhoneNumber) {
+          setError('Toate câmpurile sunt obligatorii pentru înregistrarea unui bibliotecar.');
+          setLoading(false);
+          return;
+        }
+        requestBody = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          library: {
+            name: formData.libraryName,
+            adress: formData.libraryAddress,
+            phoneNumber: formData.libraryPhoneNumber
+          }
+        };
+        break;
+      
+      case 'administrator':
+        registrationEndpoint = `${API_BASE_URL}/administrators`;
+        if (!formData.adminFirstName || !formData.adminLastName || !formData.email || !formData.password) {
+          setError('Prenumele, Numele, Email-ul și Parola sunt obligatorii pentru înregistrarea unui administrator.');
+          setLoading(false);
+          return;
+        }
+        requestBody = {
+          firstName: formData.adminFirstName,
+          lastName: formData.adminLastName,
+          email: formData.email,
+          password: formData.password,
+        };
+        break;
+      
+      default:
+        setError('Tip de înregistrare invalid.');
+        setLoading(false);
+        return;
     }
 
     try {
@@ -137,14 +171,22 @@ const Authenticate = () => {
       } else {
          // Assuming successful responses are JSON
          const responseData = JSON.parse(responseText); // Parse successful response as JSON
-         if (registrationType === 'user') {
-           alert('Cont de utilizator creat cu succes! Vă rugăm să verificați email-ul pentru codul de verificare.');
-           setUserIdForVerification(responseData.id); // Store userId for the next step
-           setStep(2); // Move to verification step
-         } else { // librarian
-           alert('Cont de bibliotecar creat cu succes! Vă rugăm să verificați email-ul pentru codul de verificare.');
-           setLibrarianIdForVerification(responseData.id); // Store librarianId for the next step
-           setStep(2); // Move to verification step
+         switch (registrationType) {
+           case 'user':
+             alert('Cont de utilizator creat cu succes! Vă rugăm să verificați email-ul pentru codul de verificare.');
+             setUserIdForVerification(responseData.id); // Store userId for the next step
+             setStep(2); // Move to verification step
+             break;
+           case 'librarian':
+             alert('Cont de bibliotecar creat cu succes! Vă rugăm să verificați email-ul pentru codul de verificare.');
+             setLibrarianIdForVerification(responseData.id); // Store librarianId for the next step
+             setStep(2); // Move to verification step
+             break;
+           case 'administrator':
+             alert('Cont de administrator creat cu succes! Vă rugăm să verificați email-ul pentru codul de verificare.');
+             setAdministratorIdForVerification(responseData.id); // Store administratorId for the next step
+             setStep(2); // Move to verification step
+             break;
          }
       }
     } catch (err) {
@@ -166,7 +208,28 @@ const Authenticate = () => {
         return;
     }
 
-    const idForVerification = registrationType === 'user' ? userIdForVerification : librarianIdForVerification;
+    let idForVerification;
+    let endpoint;
+    
+    switch (registrationType) {
+      case 'user':
+        idForVerification = userIdForVerification;
+        endpoint = `${API_BASE_URL}/users/${idForVerification}`;
+        break;
+      case 'librarian':
+        idForVerification = librarianIdForVerification;
+        endpoint = `${API_BASE_URL}/librarians/${idForVerification}`;
+        break;
+      case 'administrator':
+        idForVerification = administratorIdForVerification;
+        endpoint = `${API_BASE_URL}/administrators/${idForVerification}`;
+        break;
+      default:
+        setError('Tip de înregistrare invalid.');
+        setLoading(false);
+        return;
+    }
+
     if (!idForVerification) {
         setError('ID lipsă pentru verificare.');
         setLoading(false);
@@ -175,11 +238,8 @@ const Authenticate = () => {
 
     try {
       console.log("Attempting email verification for ID:", idForVerification);
-      const endpoint = registrationType === 'user' 
-        ? `${API_BASE_URL}/users/${idForVerification}`
-        : `${API_BASE_URL}/librarians/${idForVerification}`;
 
-      // Pentru bibliotecari, trimitem doar codul de verificare
+      // Pentru toate tipurile, trimitem doar codul de verificare
       const requestBody = {
         verificationCode: formData.verificationCode
       };
@@ -231,7 +291,28 @@ const Authenticate = () => {
     setError('');
     setLoading(true);
 
-    const idForResend = registrationType === 'user' ? userIdForVerification : librarianIdForVerification;
+    let idForResend;
+    let endpoint;
+    
+    switch (registrationType) {
+      case 'user':
+        idForResend = userIdForVerification;
+        endpoint = `${API_BASE_URL}/users/resendCode/${idForResend}`;
+        break;
+      case 'librarian':
+        idForResend = librarianIdForVerification;
+        endpoint = `${API_BASE_URL}/librarians/resendCode/${idForResend}`;
+        break;
+      case 'administrator':
+        idForResend = administratorIdForVerification;
+        endpoint = `${API_BASE_URL}/administrators/resendCode/${idForResend}`;
+        break;
+      default:
+        setError('Tip de înregistrare invalid.');
+        setLoading(false);
+        return;
+    }
+
     if (!idForResend) {
         setError('ID lipsă pentru retrimiterea codului.');
         setLoading(false);
@@ -240,10 +321,6 @@ const Authenticate = () => {
 
     try {
       console.log("Attempting to resend verification code for ID:", idForResend);
-      const endpoint = registrationType === 'user'
-        ? `${API_BASE_URL}/users/resendCode/${idForResend}`
-        : `${API_BASE_URL}/librarians/resendCode/${idForResend}`;
-
       const response = await fetch(endpoint, {
         method: 'PUT',
       });
@@ -305,6 +382,14 @@ const Authenticate = () => {
              >
                Înregistrare Bibliotecar
              </button>
+             <button
+               type="button"
+               className={registrationType === 'administrator' ? 'active' : ''}
+               onClick={() => setRegistrationType('administrator')}
+               disabled={loading}
+             >
+               Înregistrare Administrator
+             </button>
            </div>
         )}
 
@@ -346,7 +431,7 @@ const Authenticate = () => {
                   </select>
                 </div>
               </>
-            ) : (
+            ) : registrationType === 'librarian' ? (
               <>
                  <div className="form-group">
                   <label htmlFor="name">Nume Bibliotecar:</label>
@@ -367,6 +452,21 @@ const Authenticate = () => {
                 <div className="form-group">
                   <label htmlFor="libraryPhoneNumber">Telefon Librărie:</label>
                   <input type="tel" id="libraryPhoneNumber" name="libraryPhoneNumber" value={formData.libraryPhoneNumber} onChange={handleInputChange} required disabled={loading} />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="form-group">
+                  <label htmlFor="adminFirstName">Prenume Administrator:</label>
+                  <input type="text" id="adminFirstName" name="adminFirstName" value={formData.adminFirstName} onChange={handleInputChange} required disabled={loading} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="adminLastName">Nume Administrator:</label>
+                  <input type="text" id="adminLastName" name="adminLastName" value={formData.adminLastName} onChange={handleInputChange} required disabled={loading} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="email">Email:</label>
+                  <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Introduceți email-ul" required disabled={loading} />
                 </div>
               </>
             )}

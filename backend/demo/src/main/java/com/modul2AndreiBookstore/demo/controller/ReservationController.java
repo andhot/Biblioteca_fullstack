@@ -81,6 +81,30 @@ public class ReservationController {
         return ResponseEntity.ok(ReservationMapper.reservationList2ReservationDTOList(reservationList));
     }
 
+    @GetMapping("/user/{userId}/history")
+    public ResponseEntity<?> getUserReservationHistory(@PathVariable(name = "userId") Long userId,
+                                                       @RequestParam(required = false) Integer page,
+                                                       @RequestParam(required = false) Integer size) {
+        System.out.println("=== USER RESERVATION HISTORY REQUEST ===");
+        System.out.println("UserId: " + userId);
+        System.out.println("Page: " + page + ", Size: " + size);
+        System.out.println("Timestamp: " + java.time.LocalDateTime.now());
+        
+        try {
+            List<Reservation> reservationHistory = reservationService.getUserReservationHistory(userId, page, size);
+            List<ReservationDTO> reservationDTOs = ReservationMapper.reservationList2ReservationDTOListWithDetails(reservationHistory);
+            
+            System.out.println("Found " + reservationHistory.size() + " reservations in history");
+            System.out.println("=== END RESERVATION HISTORY REQUEST ===");
+            
+            return ResponseEntity.ok(reservationDTOs);
+        } catch (Exception e) {
+            System.out.println("Error fetching reservation history: " + e.getMessage());
+            System.out.println("=== END RESERVATION HISTORY REQUEST (ERROR) ===");
+            return ResponseEntity.badRequest().body("Error fetching reservation history: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/{librarianId}/{reservationId}")
     public ResponseEntity<?> changeStatus(@PathVariable Long librarianId,
                                           @PathVariable Long reservationId,

@@ -20,4 +20,8 @@ public class LibraryService {
     public List<LibraryNameOnly> findAllProjected() {
         return libraryRepository.findAllProjectedBy();
     }
+
+    public List<Library> findAllWithDetails() {
+        return libraryRepository.findAll();
+    }
 }

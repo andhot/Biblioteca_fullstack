@@ -17,6 +17,7 @@ public class StatisticsDTO {
     private Map<String, Long> reservationsByStatus;
     private Double averageReservationDuration;
     private Long totalExemplaries;
+    private Long totalReviews;
 
     public StatisticsDTO() {}
 
@@ -131,5 +132,13 @@ public class StatisticsDTO {
 
     public void setTotalExemplaries(Long totalExemplaries) {
         this.totalExemplaries = totalExemplaries;
+    }
+
+    public Long getTotalReviews() {
+        return totalReviews;
+    }
+
+    public void setTotalReviews(Long totalReviews) {
+        this.totalReviews = totalReviews;
     }
 } 

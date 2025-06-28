@@ -75,11 +75,17 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
            "GROUP BY YEAR(r.startDate), MONTH(r.startDate) ORDER BY YEAR(r.startDate), MONTH(r.startDate)")
     List<Object[]> countReservationsByMonthForLibrary(@Param("libraryId") Long libraryId, @Param("startDate") LocalDate startDate);
 
-    @Query(value = "SELECT AVG(EXTRACT(EPOCH FROM (r.end_date - r.start_date)) / 86400) FROM reservation r WHERE r.reservation_status = 'FINISHED'", nativeQuery = true)
-    List<Object[]> getAverageReservationDuration();
+    @Query(value = "SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (r.end_date::timestamp - r.start_date::timestamp)) / 86400.0), 0) FROM reservation r WHERE r.reservation_status = 'FINISHED'", nativeQuery = true)
+    Double getAverageReservationDuration();
 
-    @Query(value = "SELECT AVG(EXTRACT(EPOCH FROM (r.end_date - r.start_date)) / 86400) FROM reservation r " +
+    @Query(value = "SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (r.end_date::timestamp - r.start_date::timestamp)) / 86400.0), 0) " +
+           "FROM reservation r " +
            "JOIN exemplary e ON r.exemplary_id = e.id JOIN book b ON e.book_id = b.id " +
            "WHERE b.library_id = :libraryId AND r.reservation_status = 'FINISHED'", nativeQuery = true)
-    List<Object[]> getAverageReservationDurationForLibrary(@Param("libraryId") Long libraryId);
+    Double getAverageReservationDurationForLibrary(@Param("libraryId") Long libraryId);
+
+    // User reservation history
+    Page<Reservation> findByUserIdOrderByIdDesc(Long userId, Pageable pageable);
+
+    Long countByUserId(Long userId);
 }

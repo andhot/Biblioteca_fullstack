@@ -94,7 +94,7 @@ public class UserService {
         if (users.size() > 1) {
             throw new IllegalStateException("Multiple users found with email " + user.getEmail() + ". Please contact support.");
         }
-        
+
         User existentUser = users.get(0);
         String encodedPassword = encodePassword(user.getPassword());
         if (!existentUser.isVerified() || !encodedPassword.equals(existentUser.getPassword())) {

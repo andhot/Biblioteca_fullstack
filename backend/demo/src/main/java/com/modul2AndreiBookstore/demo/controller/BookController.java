@@ -23,11 +23,38 @@ public class BookController {
     private BookService bookService;
 
     @PostMapping("/add/{libraryId}")
-    public ResponseEntity<?> addBookToLibrary(@PathVariable(name = "libraryId") Long libraryId,
+    public synchronized ResponseEntity<?> addBookToLibrary(@PathVariable(name = "libraryId") Long libraryId,
                                               @RequestBody BookDTO bookDTO) {
-        Book bookToCreate = BookMapper.bookDTO2BookWithoutLibrary(bookDTO);
-        Book createdBook = bookService.addBookToLibrary(libraryId, bookToCreate);
-        return ResponseEntity.ok(BookMapper.book2BookDTOWithoutLibrary(createdBook));
+        
+        System.out.println("=== BOOK CREATION REQUEST ===");
+        System.out.println("LibraryId: " + libraryId);
+        System.out.println("Book: " + bookDTO.getTitle() + " by " + bookDTO.getAuthor());
+        System.out.println("Timestamp: " + java.time.LocalDateTime.now());
+        System.out.println("Thread: " + Thread.currentThread().getName());
+        
+        try {
+            Book bookToCreate = BookMapper.bookDTO2BookWithoutLibrary(bookDTO);
+            Book createdBook = bookService.addBookToLibrary(libraryId, bookToCreate);
+            
+            System.out.println("Book created successfully with ID: " + createdBook.getId());
+            System.out.println("=== END BOOK CREATION ===");
+            
+            return ResponseEntity.ok(BookMapper.book2BookDTOWithoutLibrary(createdBook));
+        } catch (RuntimeException e) {
+            System.out.println("Error creating book: " + e.getMessage());
+            System.out.println("=== END BOOK CREATION (ERROR) ===");
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> getTotalBooksCount() {
+        try {
+            Long count = bookService.getTotalBooksCount();
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L);
+        }
     }
 
     @GetMapping("/{bookId}")
@@ -137,6 +164,25 @@ public class BookController {
         Page<Book> booksPage = bookService.filterBooksbetween2datesforUser(userId, userSearchDTO, page, size);
         Page<BookDTO> bookDTOPage = booksPage.map(BookMapper::book2BookDTOWithoutLibrary);
         return ResponseEntity.ok(bookDTOPage);
+    }
+
+    @GetMapping("/top-rated")
+    public ResponseEntity<?> getTopRatedBooks(@RequestParam(required = false, defaultValue = "6") Integer limit) {
+        List<Book> topRatedBooks = bookService.getTopRatedBooks(limit);
+        List<BookDTO> bookDTOs = topRatedBooks.stream()
+                .map(BookMapper::book2BookDTOWithoutLibrary)
+                .toList();
+        return ResponseEntity.ok(bookDTOs);
+    }
+
+    @PostMapping("/populate-sample-data")
+    public ResponseEntity<?> populateSampleData() {
+        try {
+            bookService.populateSampleBooksWithReviews();
+            return ResponseEntity.ok("Sample data populated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error populating sample data: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

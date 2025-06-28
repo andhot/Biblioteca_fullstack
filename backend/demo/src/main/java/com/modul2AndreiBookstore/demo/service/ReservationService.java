@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -77,8 +78,16 @@ public class ReservationService {
         }
 
         ReservationStatus currentStatus = reservation.getReservationStatus();
-        if (!currentStatus.isNextStatePossible(reservationToUpdate.getReservationStatus())) {
-            throw new IllegalStateException("Not possible");
+        ReservationStatus newStatus = reservationToUpdate.getReservationStatus();
+        
+        System.out.println("=== STATUS TRANSITION CHECK ===");
+        System.out.println("Current Status: " + currentStatus);
+        System.out.println("Requested New Status: " + newStatus);
+        System.out.println("Is transition possible: " + currentStatus.isNextStatePossible(newStatus));
+        
+        if (!currentStatus.isNextStatePossible(newStatus)) {
+            System.out.println("Status transition rejected: " + currentStatus + " -> " + newStatus);
+            throw new IllegalStateException("Not possible: Cannot transition from " + currentStatus + " to " + newStatus);
         }
         reservation.setReservationStatus(reservationToUpdate.getReservationStatus());
 
@@ -118,5 +127,17 @@ public class ReservationService {
         return reservationRepository.findReservationsForUserByStatus(userId, pageable,
                 reservationSearchDTO.getStartDate(), reservationSearchDTO.getEndDate(),
                 reservationSearchDTO.getReservationStatusList());
+    }
+
+    public List<Reservation> getUserReservationHistory(Long userId, Integer page, Integer size) {
+        userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        Pageable pageable = (page != null && size != null)
+                ? PageRequest.of(page, size)
+                : PageRequest.of(0, 50); // Default to first 50 records
+
+        // Get all reservations for user, ordered by creation date descending
+        Page<Reservation> reservationsPage = reservationRepository.findByUserIdOrderByIdDesc(userId, pageable);
+        return reservationsPage.getContent();
     }
 }

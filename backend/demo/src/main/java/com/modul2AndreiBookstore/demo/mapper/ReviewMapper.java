@@ -30,9 +30,19 @@ public class ReviewMapper {
         return reviewDTO;
     }
 
-
-
-
-
+    public static ReviewDTO review2ReviewDTOWithUser(Review review) {
+        ReviewDTO reviewDTO = new ReviewDTO();
+        reviewDTO.setId(review.getId());
+        reviewDTO.setStars(review.getStars());
+        reviewDTO.setMessage(review.getMessage());
+        reviewDTO.setDateOfCreation(review.getDateOfCreation());
+        if (review.getBook() != null) {
+            reviewDTO.setBook(BookMapper.book2BookDTO(review.getBook()));
+        }
+        if (review.getUser() != null) {
+            reviewDTO.setUser(UserMapper.user2UserDTO(review.getUser()));
+        }
+        return reviewDTO;
+    }
 
 }

@@ -3,13 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import "./Navbar.css";
 import logoImg from "../../images/logo.png";
 import {HiOutlineMenuAlt3, HiX} from "react-icons/hi";
-import {FaUser, FaHeart, FaHome, FaInfoCircle} from "react-icons/fa";
+import {FaUserCircle, FaUser, FaHeart, FaHome, FaInfoCircle, FaTachometerAlt, FaSignOutAlt} from "react-icons/fa";
 import { useGlobalContext } from '../../context.jsx';
+import { useContext } from 'react';
+import { AppContext } from '../../context';
 
 const Navbar = () => {
   const [toggleMenu, setToggleMenu] = useState(false);
   const navigate = useNavigate();
-  const { isLoggedIn, setIsLoggedIn, setUser } = useGlobalContext();
+  const { isLoggedIn, setIsLoggedIn, setUser, user } = useGlobalContext();
+  const { user: appContextUser } = useContext(AppContext);
 
   const userEmail = localStorage.getItem('userEmail');
   const userName = userEmail ? userEmail.split('@')[0] : 'User';
@@ -22,6 +25,7 @@ const Navbar = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userRole');
     localStorage.removeItem('userLibrary');
     navigate('/');
     setToggleMenu(false);
@@ -32,9 +36,9 @@ const Navbar = () => {
       <div className='container navbar-content'>
         <div className='navbar-brand-section'>
           <Link to="/" className='navbar-brand'>
-            <img src={logoImg} alt="BookHub Logo" className='navbar-logo' />
+            <img src={logoImg} alt="BookCentral Logo" className='navbar-logo' />
             <div className='brand-text'>
-              <span className='brand-name'>BookHub</span>
+              <span className='brand-name'>BookCentral</span>
               <span className='brand-tagline'>Biblioteca Ta Digitală</span>
             </div>
           </Link>
@@ -54,6 +58,22 @@ const Navbar = () => {
                 <span>Despre Noi</span>
               </Link>
             </li>
+            {isLoggedIn && user && user.role === 'librarian' && (
+              <li className='nav-item'>
+                <Link to="/librarian" className='nav-link'>
+                  <FaTachometerAlt className='nav-icon' />
+                  <span>Dashboard</span>
+                </Link>
+              </li>
+            )}
+            {isLoggedIn && user && user.role === 'administrator' && (
+              <li className='nav-item'>
+                <Link to="/administrator" className='nav-link'>
+                  <FaTachometerAlt className='nav-icon' />
+                  <span>Dashboard Admin</span>
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -62,14 +82,12 @@ const Navbar = () => {
             <>
               <Link to="/favorites" className='nav-action-btn favorites-btn'>
                 <FaHeart />
-                <span>Favorite</span>
               </Link>
               <Link to="/profile" className='nav-action-btn profile-btn'>
-                <FaUser />
-                <span>Contul Meu</span>
+                <FaUserCircle />
               </Link>
-              <button onClick={handleLogout} className='nav-action-btn logout-btn'>
-                Deconectare
+              <button onClick={handleLogout} className='nav-action-btn logout-btn' title='Deconectare'>
+                <FaSignOutAlt />
               </button>
             </>
           ) : (
@@ -104,18 +122,32 @@ const Navbar = () => {
                 <span>Despre Noi</span>
               </Link>
             </li>
+            {isLoggedIn && user && user.role === 'librarian' && (
+              <li>
+                <Link to="/librarian" className='mobile-nav-link' onClick={() => setToggleMenu(false)}>
+                  <FaTachometerAlt />
+                  <span>Dashboard</span>
+                </Link>
+              </li>
+            )}
+            {isLoggedIn && user && user.role === 'administrator' && (
+              <li>
+                <Link to="/administrator" className='mobile-nav-link' onClick={() => setToggleMenu(false)}>
+                  <FaTachometerAlt />
+                  <span>Dashboard Admin</span>
+                </Link>
+              </li>
+            )}
             {isLoggedIn ? (
               <>
                 <li>
                   <Link to="/favorites" className='mobile-nav-link' onClick={() => setToggleMenu(false)}>
                     <FaHeart />
-                    <span>Favorite</span>
                   </Link>
                 </li>
                 <li>
                   <Link to="/profile" className='mobile-nav-link' onClick={() => setToggleMenu(false)}>
-                    <FaUser />
-                    <span>Contul Meu</span>
+                    <FaUserCircle />
                   </Link>
                 </li>
                 <li>
